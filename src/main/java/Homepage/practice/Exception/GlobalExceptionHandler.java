@@ -5,7 +5,6 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -74,5 +73,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GlobalApiResponse<?>> handleUserNotFound(UserNotFound ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "USER_NOT_FOUND"));
+    }
+
+    /** 회원 아이디 이미 존재 오류 */
+    @ExceptionHandler(UsernameAlreadyExists.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleUsernameAlreadyExists(UsernameAlreadyExists ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "USERNAME_EXISTS"));
     }
 }
