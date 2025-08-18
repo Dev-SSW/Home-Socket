@@ -1,5 +1,6 @@
 package Homepage.practice.User;
 
+import Homepage.practice.User.DTO.SignupRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +26,6 @@ public class User implements UserDetails, OAuth2User {
     private LocalDate birth;                // 회원 생년월일
     private String name;                    // 회원 이름
     private Role role;                      // 회원 권한
-
 
     /** OAuth2User 구현부 */
     @Transient                              // 관리 대상에서 해당 필드나 메서드를 제외
@@ -63,5 +63,15 @@ public class User implements UserDetails, OAuth2User {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    /** 생성 메서드 */
+    public static User createUser(SignupRequest request) {
+        return User.builder()
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .birth(request.getBirth())
+                .name(request.getName())
+                .build();
     }
 }
