@@ -8,6 +8,8 @@ import Homepage.practice.User.DTO.SignupRequest;
 import Homepage.practice.User.JWT.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,32 +35,39 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new UsernameAlreadyExists("이미 존재하는 아이디 입니다.");
         }
-        User user = User.createUser(request);
+        User user = User.createUser(request, passwordEncoder);
         userRepository.save(user);
     }
 
     /** 로그인 */
     public JwtResponse login(LoginRequest request) {
-        // 사용자 인증
-        Authentication authenticate = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        try {
+            // 사용자 인증
+            Authentication authenticate = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
 
-        // 사용자 정보 조회
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
+            // 사용자 정보 조회
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
 
-        // 인증이 성공 시 SecurityContetext에 저장
-        SecurityContextHolder.getContext().setAuthentication(authenticate);
+            // 인증이 성공 시 SecurityContetext에 저장
+            SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-        // JWT 생성
-        var jwt = jwtUtils.generateToken(user);
-        var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
+            // JWT 생성
+            var jwt = jwtUtils.generateToken(user);
+            var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
 
-        return JwtResponse.builder()
-                .token(jwt)
-                .refreshToken(refreshToken)
-                .expirationTime("24Hr")
-                .build();
+            return JwtResponse.builder()
+                    .token(jwt)
+                    .refreshToken(refreshToken)
+                    .expirationTime("24Hr")
+                    .build();
+        } catch (InternalAuthenticationServiceException e) {
+            if (e.getCause() instanceof UserNotFound) {
+                throw new UserNotFound("아이디에 해당하는 회원이 없습니다.");
+            }
+            throw e;
+        }
     }
 }
