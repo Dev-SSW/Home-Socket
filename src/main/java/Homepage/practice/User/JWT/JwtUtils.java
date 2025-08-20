@@ -65,19 +65,13 @@ public class JwtUtils {
         return claimsResolver.apply(claims);
     }
 
-    /** JWT 토큰 유효성 검사 */
+    /** JWT 토큰 유효성 검사 (유효하면 True) */
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
-    /** JWT 토큰 유효성 검사 (만료 여부 제외) */
-    public boolean isTokenValidExceptExpired(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername());
     }
 
-    /** JWT 토큰 기간 만료 검사 */
+    /** JWT 토큰 기간 만료 검사 (토큰이 만료되었으면 True) */
     public boolean isTokenExpired(String token) {
         return extractClaims(token, Claims::getExpiration).before(new Date());
     }
