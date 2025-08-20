@@ -89,4 +89,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "USERNAME_EXISTS"));
     }
+
+    /** JWT 유효성 검사 (토큰 만료, 유효성) */
+    @ExceptionHandler(JwtInvalid.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleJwtInvalid(JwtInvalid ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "JWT_INVALID"));
+    }
 }
