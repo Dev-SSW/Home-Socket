@@ -70,12 +70,12 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(entryPoint()) // 401
-                        .accessDeniedHandler(deniedHandler())           // 403
+                        .accessDeniedHandler(deniedHandler())   // 403
                 )
                 .sessionManagement(s -> s
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))   // 세션 사용 비활성화
-                .authenticationProvider(provider())                                                 // 커스텀 사용자 인증 방식
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);        // JWT 토큰 요청 시 jwtAuthFilter를 먼저 거치도록 설정
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))             // 세션 사용 비활성화
+                .authenticationProvider(provider())                                          // 커스텀 사용자 인증 방식
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // JWT 토큰 요청 시 jwtAuthFilter를 먼저 거치도록 설정
         return httpSecurity.build();
     }
 
