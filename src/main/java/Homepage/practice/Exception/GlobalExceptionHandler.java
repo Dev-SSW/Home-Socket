@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GlobalApiResponse<?>> handleNotReadable(HttpMessageNotReadableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(GlobalApiResponse.fail("요청 본문을 읽을 수 없습니다.", "400"));
+    }
+
+    /** 401 - 로그인 오류 문제 */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(GlobalApiResponse.fail("아이디 또는 비밀번호가 올바르지 않습니다.", "401"));
     }
 
     /** 502 - 외부 API 호출 실패 */

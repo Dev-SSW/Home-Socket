@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDate;
@@ -66,12 +67,13 @@ public class User implements UserDetails, OAuth2User {
     }
 
     /** 생성 메서드 */
-    public static User createUser(SignupRequest request) {
+    public static User createUser(SignupRequest request, PasswordEncoder passwordEncoder) {
         return User.builder()
                 .username(request.getUsername())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .birth(request.getBirth())
                 .name(request.getName())
+                .role(Role.ROLE_USER)
                 .build();
     }
 }
