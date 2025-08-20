@@ -66,7 +66,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                if (!jwtUtils.isTokenValidExceptExpired(jwtToken, userDetails)) {
+                if (!jwtUtils.isTokenValid(jwtToken, userDetails)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
                             GlobalApiResponse.fail("유효하지 않은 토큰입니다.", "JWT_INVALID"));
                     return;

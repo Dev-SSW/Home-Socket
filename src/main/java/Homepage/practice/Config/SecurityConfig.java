@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -29,6 +31,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -47,12 +50,12 @@ public class SecurityConfig {
 
     /** 필터 체인 설정 */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 명시적인 CORS 설정 추가
+                .cors(cors -> cors.configurationSource(source()))                   // 명시적인 CORS 설정 추가
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // OPTIONS 요청(Preflight) 허용
                         .requestMatchers(
@@ -66,12 +69,13 @@ public class SecurityConfig {
                         .requestMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customAuthenticationEntryPoint()) // 401
-                        .accessDeniedHandler(customAccessDeniedHandler())           // 403
+                        .authenticationEntryPoint(entryPoint()) // 401
+                        .accessDeniedHandler(deniedHandler())   // 403
                 )
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))   // 세션 사용 비활성화
-                .authenticationProvider(authenticationProvider())                                   // 커스텀 사용자 인증 방식
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);        // JWT 토큰 요청 시 jwtAuthFilter를 먼저 거치도록 설정
+                .sessionManagement(s -> s
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))             // 세션 사용 비활성화
+                .authenticationProvider(provider())                                          // 커스텀 사용자 인증 방식
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // JWT 토큰 요청 시 jwtAuthFilter를 먼저 거치도록 설정
         return httpSecurity.build();
     }
 
@@ -83,51 +87,49 @@ public class SecurityConfig {
 
     /** 사용자 인증을 처리 */
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userService);   // 사용자 정보 로드
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());// 비밀번호 비교
-        return daoAuthenticationProvider;
+    public AuthenticationProvider provider() {
+        DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
+        dao.setUserDetailsService(userService);   // 사용자 정보 로드
+        dao.setPasswordEncoder(passwordEncoder());// 비밀번호 비교
+        return dao;
     }
 
     /** AuthenticationManager가 자동으로 Bean으로 노출되지 않음, AuthService에서 사용하기 위함 */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager manager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     /** CORS 설정을 위한 CorsConfigurationSource 빈 생성 */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://leoan.p-e.kr",
-                "https://leoan.p-e.kr","http://localhost:8081",
-                "http://localhost:8081", "http://localhost:3000",
-                "https://localhost:3000", "https://high-coding.vercel.app"));
-        // *:와일드 카드 URL을 사용하려면 OriginPatterns를 사용해야 합니다.
-        // configuration.addAllowedOrigin("*");
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+    public CorsConfigurationSource source() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of(
+                "http://leoan.p-e.kr", "https://leoan.p-e.kr","http://localhost:8081",
+                "http://localhost:8081", "http://localhost:3000", "https://localhost:3000"));
+                // *:와일드 카드 URL을 사용하려면 OriginPatterns를 사용해야 합니다.
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    private void write(HttpServletResponse response, int status, GlobalApiResponse<?> body) throws java.io.IOException {
+    private void write(HttpServletResponse response, int status, GlobalApiResponse<?> body) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(), body);
+        mapper.writeValue(response.getWriter(), body);
     }
 
     /** 401 Unauthorized 처리 */
     @Bean
-    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+    public AuthenticationEntryPoint entryPoint() {
         return (HttpServletRequest request,
                 HttpServletResponse response,
-                org.springframework.security.core.AuthenticationException authException) -> {
+                AuthenticationException authException) -> {
             write(response, HttpServletResponse.SC_UNAUTHORIZED,
                     GlobalApiResponse.fail("인증이 필요합니다.", "401"));
         };
@@ -135,10 +137,10 @@ public class SecurityConfig {
 
     /** 403 Forbidden 처리 */
     @Bean
-    public AccessDeniedHandler customAccessDeniedHandler() {
+    public AccessDeniedHandler deniedHandler() {
         return (HttpServletRequest request,
                 HttpServletResponse response,
-                org.springframework.security.access.AccessDeniedException accessDeniedException) -> {
+                AccessDeniedException accessDeniedException) -> {
             write(response, HttpServletResponse.SC_FORBIDDEN,
                     GlobalApiResponse.fail("접근 권한이 없습니다.", "403"));
         };

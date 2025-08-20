@@ -26,6 +26,7 @@ public class User implements UserDetails, OAuth2User {
     private String password;                // 회원 Password
     private LocalDate birth;                // 회원 생년월일
     private String name;                    // 회원 이름
+    @Enumerated(EnumType.STRING)
     private Role role;                      // 회원 권한
 
     /** OAuth2User 구현부 */
