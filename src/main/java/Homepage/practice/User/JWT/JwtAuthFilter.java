@@ -39,7 +39,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         System.out.println("필터를 거치지 않습니다.");
         String URL = request.getRequestURI();
         String[] excludePath = {
-                "/public", "/error", "/swagger-ui", "/v3/api-docs", "/v3/api-docs.yaml", "/v3/api-docs/swagger-config"
+                "/public",
+                "/error",
+                "/swagger-ui",
+                "/v3/api-docs",
+                "/v3/api-docs.yaml",
+                "/v3/api-docs/swagger-config"
         };
         return  Arrays.stream(excludePath).anyMatch(URL::startsWith);
     }

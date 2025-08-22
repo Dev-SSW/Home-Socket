@@ -72,7 +72,8 @@ public class SecurityConfig {
                                 "/error/",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs.yaml"
+                                "/v3/api-docs.yaml",
+                                "/v3/api-docs/swagger-config"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                         .requestMatchers("/user/**").hasAnyRole("ADMIN", "USER")
