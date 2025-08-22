@@ -1,6 +1,5 @@
 package Homepage.practice.User;
 
-import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.Exception.JwtInvalid;
 import Homepage.practice.Exception.UserNotFound;
 import Homepage.practice.Exception.UsernameAlreadyExists;
@@ -10,10 +9,8 @@ import Homepage.practice.User.DTO.LoginRequest;
 import Homepage.practice.User.DTO.SignupRequest;
 import Homepage.practice.User.JWT.JwtUtils;
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -69,9 +66,11 @@ public class AuthService {
                     .expirationTime("24Hr")
                     .build();
         } catch (InternalAuthenticationServiceException e) {
+            // 포장된 예외의 원인이 UserNotFound라면
             if (e.getCause() instanceof UserNotFound) {
                 throw new UserNotFound("아이디에 해당하는 회원이 없습니다.");
             }
+            // 아니라면 그대로 다시 던진다 (InternalAuthenticationServiceException)
             throw e;
         }
     }
