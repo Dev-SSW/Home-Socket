@@ -96,4 +96,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "JWT_INVALID"));
     }
+
+    /** 사용할 수 없는 provider */
+    @ExceptionHandler(OAuthProviderNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleOAuthProviderNotFound(OAuthProviderNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "OAUTH_PROVIDER_NOT_FOUND"));
+    }
 }
