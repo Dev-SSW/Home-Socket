@@ -127,22 +127,16 @@ public class SecurityConfig {
     /** 401 Unauthorized 처리 */
     @Bean
     public AuthenticationEntryPoint entryPoint() {
-        return (HttpServletRequest request,
-                HttpServletResponse response,
-                AuthenticationException authException) -> {
-            write(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    GlobalApiResponse.fail("인증이 필요합니다.", "401"));
-        };
+        return (request, response, authException) ->
+                write(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        GlobalApiResponse.fail("인증이 필요합니다.", "401"));
     }
 
     /** 403 Forbidden 처리 */
     @Bean
     public AccessDeniedHandler deniedHandler() {
-        return (HttpServletRequest request,
-                HttpServletResponse response,
-                AccessDeniedException accessDeniedException) -> {
-            write(response, HttpServletResponse.SC_FORBIDDEN,
-                    GlobalApiResponse.fail("접근 권한이 없습니다.", "403"));
-        };
+        return (request, response, accessDeniedException) ->
+                write(response, HttpServletResponse.SC_FORBIDDEN,
+                        GlobalApiResponse.fail("접근 권한이 없습니다.", "403"));
     }
 }
