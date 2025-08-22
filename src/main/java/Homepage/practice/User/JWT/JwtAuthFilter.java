@@ -3,13 +3,12 @@ package Homepage.practice.User.JWT;
 import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.User.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,7 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /** 예외 발생 시 응답 작성 */
     private void write(HttpServletResponse response, int status, GlobalApiResponse<?> body) throws IOException {
         response.setStatus(status);
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
         objectMapper.writeValue(response.getWriter(), body);
     }
 
@@ -40,7 +39,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         System.out.println("필터를 거치지 않습니다.");
         String URL = request.getRequestURI();
         String[] excludePath = {
-                "/public", "/error", "/swagger-ui", "/v3/api-docs", "/v3/api-docs.yaml", "/v3/api-docs/swagger-config"
+                "/public",
+                "/error",
+                "/swagger-ui",
+                "/v3/api-docs",
+                "/v3/api-docs.yaml",
+                "/v3/api-docs/swagger-config"
         };
         return  Arrays.stream(excludePath).anyMatch(URL::startsWith);
     }
@@ -48,10 +52,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /** 필터 설정 부분 */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        final String authHeader = request.getHeader("Authorization");
+
         try {
-            final String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                throw new JwtException("토큰이 존재하지 않습니다.");
+                filterChain.doFilter(request, response); // 토큰 없으면 401은 entryPoint가 처리
+                return;
             }
 
             String jwtToken = authHeader.substring(7);
@@ -62,7 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 if (jwtUtils.isTokenExpired(jwtToken)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
-                            GlobalApiResponse.fail("토큰이 만료되었습니다.", "JWT_EXPIRED"));
+                            GlobalApiResponse.fail("액세스 토큰이 만료되었습니다.", "JWT_EXPIRED"));
                     return;
                 }
 
@@ -79,10 +85,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(token);
             }
             filterChain.doFilter(request, response);
-
-        } catch (JwtException e) {
+        } catch (Exception e) {
             write(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    GlobalApiResponse.fail(e.getMessage(), "JWT_INVALID"));
+                    GlobalApiResponse.fail("유효하지 않은 토큰입니다.", "JWT_INVALID"));
         }
     }
 }

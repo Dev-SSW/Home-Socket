@@ -2,16 +2,17 @@ package Homepage.practice.Config;
 
 import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.User.JWT.JwtAuthFilter;
+import Homepage.practice.User.OAuth.OAuthFailureHandler;
+import Homepage.practice.User.OAuth.OAuthSuccessHandler;
+import Homepage.practice.User.OAuth.OAuthUserService;
 import Homepage.practice.User.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,7 +21,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -39,13 +39,22 @@ import java.util.List;
 public class SecurityConfig {
     private final UserService userService;
     private final JwtAuthFilter jwtAuthFilter;
+    private final OAuthUserService oAuthUserService;
+    private final OAuthSuccessHandler oAuthSuccessHandler;
+    private final OAuthFailureHandler oAuthFailureHandler;
 
     /** 순환 참조를 막기 위한 지연 로딩 */
     public SecurityConfig (@Lazy UserService userService,
-                           @Lazy JwtAuthFilter jwtAuthFilter
+                           @Lazy JwtAuthFilter jwtAuthFilter,
+                           @Lazy OAuthUserService oAuthUserService,
+                           @Lazy OAuthSuccessHandler oAuthSuccessHandler,
+                           @Lazy OAuthFailureHandler oAuthFailureHandler
         ) {
         this.userService = userService;
         this.jwtAuthFilter = jwtAuthFilter;
+        this.oAuthUserService = oAuthUserService;
+        this.oAuthSuccessHandler = oAuthSuccessHandler;
+        this.oAuthFailureHandler = oAuthFailureHandler;
     }
 
     /** 필터 체인 설정 */
@@ -63,11 +72,17 @@ public class SecurityConfig {
                                 "/error/",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs.yaml"
+                                "/v3/api-docs.yaml",
+                                "/v3/api-docs/swagger-config"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                         .requestMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated())
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oAuthSuccessHandler)
+                        .failureHandler(oAuthFailureHandler)
+                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+                                .userService(oAuthUserService)))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(entryPoint()) // 401
                         .accessDeniedHandler(deniedHandler())   // 403
@@ -106,7 +121,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(
                 "http://leoan.p-e.kr", "https://leoan.p-e.kr","http://localhost:8081",
-                "http://localhost:8081", "http://localhost:3000", "https://localhost:3000"));
+                "https://localhost:8081", "http://localhost:3000", "https://localhost:3000"));
                 // *:와일드 카드 URL을 사용하려면 OriginPatterns를 사용해야 합니다.
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
@@ -127,22 +142,16 @@ public class SecurityConfig {
     /** 401 Unauthorized 처리 */
     @Bean
     public AuthenticationEntryPoint entryPoint() {
-        return (HttpServletRequest request,
-                HttpServletResponse response,
-                AuthenticationException authException) -> {
-            write(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    GlobalApiResponse.fail("인증이 필요합니다.", "401"));
-        };
+        return (request, response, authException) ->
+                write(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        GlobalApiResponse.fail("인증이 필요합니다.", "401"));
     }
 
     /** 403 Forbidden 처리 */
     @Bean
     public AccessDeniedHandler deniedHandler() {
-        return (HttpServletRequest request,
-                HttpServletResponse response,
-                AccessDeniedException accessDeniedException) -> {
-            write(response, HttpServletResponse.SC_FORBIDDEN,
-                    GlobalApiResponse.fail("접근 권한이 없습니다.", "403"));
-        };
+        return (request, response, accessDeniedException) ->
+                write(response, HttpServletResponse.SC_FORBIDDEN,
+                        GlobalApiResponse.fail("접근 권한이 없습니다.", "403"));
     }
 }

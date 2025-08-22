@@ -77,4 +77,13 @@ public class User implements UserDetails, OAuth2User {
                 .role(Role.ROLE_USER)
                 .build();
     }
+
+    /** OAuth 생성 메서드 */
+    public static User createUser(String username, String name) {
+        return User.builder()
+                .username(username)
+                .name(name)
+                .role(Role.ROLE_USER) // OAuth 사용자의 기본 역할 설정
+                .build();
+    }
 }

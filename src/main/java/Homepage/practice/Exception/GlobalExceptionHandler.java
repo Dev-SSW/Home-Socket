@@ -11,6 +11,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -51,7 +52,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<GlobalApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(GlobalApiResponse.fail("아이디 또는 비밀번호가 올바르지 않습니다.", "401"));
+                .body(GlobalApiResponse.fail("아이디 또는 비밀번호가 올바르지 않습니다.", "401"));
+    }
+
+    /** 404 - 존재하지 않는 URL */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleNoHandlerFound(NoHandlerFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail("존재하지 않는 경로입니다: " + ex.getRequestURL(), "404"));
     }
 
     /** 502 - 외부 API 호출 실패 */
@@ -95,5 +103,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GlobalApiResponse<?>> handleJwtInvalid(JwtInvalid ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "JWT_INVALID"));
+    }
+
+    /** 사용할 수 없는 provider */
+    @ExceptionHandler(OAuthProviderNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleOAuthProviderNotFound(OAuthProviderNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "OAUTH_PROVIDER_NOT_FOUND"));
     }
 }
