@@ -1,0 +1,239 @@
+package Homepage.practice.User.Integration;
+
+import Homepage.practice.User.DTO.JwtRequest;
+import Homepage.practice.User.DTO.LoginRequest;
+import Homepage.practice.User.DTO.SignupRequest;
+import Homepage.practice.User.JWT.JwtUtils;
+import Homepage.practice.User.User;
+import Homepage.practice.User.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc  // MockMvc 빈 자동 구성
+@Transactional
+@Rollback
+public class IntegrationUser {
+    // 테스트 인프라
+    @Autowired
+    private MockMvc mockMvc;            // @AutoConfigureMockMvc로 자동 주입
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // 테스트 시 사용
+    @Autowired
+    private JwtUtils jwtUtils;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 테스트 필드
+    private SignupRequest signupRequest;
+    private LoginRequest loginRequest;
+
+    @BeforeEach
+    void setup() {
+        signupRequest = new SignupRequest("user1", "pass1", LocalDate.of(2000,1,1), "홍길동");
+        loginRequest = new LoginRequest("user1", "pass1");
+    }
+
+    @Test
+    @DisplayName("회원가입 성공")
+    void signup_success() throws Exception {
+        mockMvc.perform(post("/public/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signupRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("회원가입 성공"));
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 아이디 중복")
+    void signup_fail() throws Exception {
+        // DB에 미리 사용자 저장
+        User existingUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(existingUser);
+
+        mockMvc.perform(post("/public/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signupRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("이미 존재하는 아이디 입니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 성공")
+    void login_success() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+
+        mockMvc.perform(post("/public/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("로그인 성공"))
+                .andExpect(jsonPath("$.data.token").exists())
+                .andExpect(jsonPath("$.data.refreshToken").exists());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 존재하지 않는 유저")
+    void login_fail() throws Exception {
+        // DB에 미리 저장하지 않았음
+        mockMvc.perform(post("/public/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("아이디에 해당하는 회원이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 잘못된 비밀번호")
+    void login_wrong() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        LoginRequest wrongPassRequest = new LoginRequest("user1", "wrongPass");
+
+        mockMvc.perform(post("/public/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrongPassRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호가 올바르지 않습니다."))
+                .andExpect(jsonPath("$.error").value("401"));
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 성공")
+    void tokenRenew_success() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 토큰 발급
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateRefreshToken(new HashMap<>(), newUser));
+
+        mockMvc.perform(post("/public/tokenRenew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("재발급 성공"))
+                .andExpect(jsonPath("$.data.token").exists())
+                .andExpect(jsonPath("$.data.refreshToken").exists());
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 실패 - 변조된 리프레시 토큰")
+    void tokenRenew_fail1() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 토큰 발급
+        String token = jwtUtils.generateRefreshToken(new HashMap<>(), newUser);
+        String invaildToken = token.substring(0, token.length()-2) + "AB";
+        JwtRequest jwtRequest = new JwtRequest(invaildToken);
+
+        mockMvc.perform(post("/public/tokenRenew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("유효하지 않은 리프레시 토큰입니다."));
+    }
+
+    @Test
+    @DisplayName("토큰 재발급 실패 - 리프레시 토큰 만료")
+    void tokenRenew_fail2() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 만료된 토큰 발급
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));
+
+        mockMvc.perform(post("/public/tokenRenew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("리프레시 토큰이 만료되었습니다."));
+    }
+
+    @Test
+    @DisplayName("토큰 유효성 검사 성공")
+    void validateToken_success() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 토큰 발급
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateToken(newUser));
+
+        mockMvc.perform(post("/public/validateTest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("유효한 토큰입니다."));
+    }
+
+    @Test
+    @DisplayName("토큰 유효성 검사 실패 - 변조된 토큰")
+    void validateToken_fail1() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 토큰 발급
+        String token = jwtUtils.generateToken(newUser);
+        String invaildToken = token.substring(0, token.length()-2) + "AB";
+        JwtRequest jwtRequest = new JwtRequest(invaildToken);
+
+        mockMvc.perform(post("/public/validateTest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("유효하지 않은 토큰입니다."));
+    }
+
+    @Test
+    @DisplayName("토큰 유효성 검사 실패 - 토큰 만료")
+    void validateToken_fail2() throws Exception {
+        // 회원가입
+        User newUser = User.createUser(signupRequest, passwordEncoder);
+        userRepository.save(newUser);
+        // 만료된 토큰 발급
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));
+
+        mockMvc.perform(post("/public/validateTest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(jwtRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("토큰이 만료되었습니다."));
+    }
+}

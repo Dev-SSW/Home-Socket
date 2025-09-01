@@ -1,0 +1,47 @@
+# application-test.yml
+# Server Port 번호
+server:
+  port: 8081
+
+# 스프링 설정 관련
+spring:
+  # 404 URL_NOT_FOUND 예외 처리를 위한 설정
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+  # .env 설정, 이를 설정함으로써 메인 애플리케이션 클래스에 입력값들을 명시하지 않아도 됨
+  config:
+    import: optional:file:.env[.properties]
+
+  # jwt 키 설정
+  jwt:
+    secret: ${JWT_SECRET}
+
+  # DB 설정
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련
+  jpa:
+    hibernate:
+      ddl-auto: create-drop       # 테스트 시 매번 스키마 초기화
+    properties:
+      hibernate:
+        format_sql: true          # SQL 포맷
+        use_sql_comments: true
+        highlight_sql: true       # 가독성 (컬러)
+    show-sql: true
+    database: mysql
+
+# 출력 창에 나타날 출력 코드에 대한 포맷
+logging.level:
+  root: info                              # 전체 기본 레벨
+  org.hibernate.SQL: debug                # sql 로그
+  org.springframework.security: debug     # 인증/인가 요청
+  org.springframework.web: debug          # web 요청
