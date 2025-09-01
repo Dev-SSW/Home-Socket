@@ -8,6 +8,7 @@ import Homepage.practice.User.DTO.JwtResponse;
 import Homepage.practice.User.DTO.LoginRequest;
 import Homepage.practice.User.DTO.SignupRequest;
 import Homepage.practice.User.JWT.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -104,6 +105,8 @@ public class AuthService {
                     .refreshToken(newRefreshToken)
                     .expirationTime("24Hr")
                     .build();
+        } catch (ExpiredJwtException e) {
+            throw new JwtInvalid("리프레시 토큰이 만료되었습니다.");
         } catch (JwtException e) {
             // 서명이 틀리거나 변조된 토큰
             throw new JwtInvalid("유효하지 않은 리프레시 토큰입니다.");
@@ -129,6 +132,8 @@ public class AuthService {
             if (!jwtUtils.isTokenValid(validateToken.getToken(), user)) {
                 throw new JwtInvalid("유효하지 않은 토큰입니다.");
             }
+        } catch (ExpiredJwtException e) {
+            throw new JwtInvalid("토큰이 만료되었습니다.");
         } catch (JwtException e) {
             // 서명이 틀리거나 변조된 토큰
             throw new JwtInvalid("유효하지 않은 토큰입니다.");
