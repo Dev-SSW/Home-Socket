@@ -75,4 +75,15 @@ public class JwtUtils {
     public boolean isTokenExpired(String token) {
         return extractClaims(token, Claims::getExpiration).before(new Date());
     }
+
+    /** 테스트를 위한 만료된 토큰 생성 */
+    public String generateExpiredToken(HashMap<String, Object> claims, UserDetails userDetails) {
+        return Jwts.builder()
+                .setClaims(claims)                                                      // 추가 클레임 저장 가능
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() - 1000))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
 }
