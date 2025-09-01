@@ -3,6 +3,8 @@ package Homepage.practice.User.JWT;
 import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.User.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 if (jwtUtils.isTokenExpired(jwtToken)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
-                            GlobalApiResponse.fail("액세스 토큰이 만료되었습니다.", "JWT_EXPIRED"));
+                            GlobalApiResponse.fail("토큰이 만료되었습니다.", "JWT_INVALID"));
                     return;
                 }
 
@@ -85,7 +87,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(token);
             }
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+
+        } catch (ExpiredJwtException e) {
+            write(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    GlobalApiResponse.fail("토큰이 만료되었습니다.", "JWT_INVALID"));
+        } catch (JwtException e) {
+            // 서명이 틀리거나 변조된 토큰
             write(response, HttpServletResponse.SC_UNAUTHORIZED,
                     GlobalApiResponse.fail("유효하지 않은 토큰입니다.", "JWT_INVALID"));
         }
