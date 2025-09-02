@@ -87,10 +87,10 @@ public class User implements UserDetails, OAuth2User {
     }
 
     /** 생성 메서드 */
-    public static User createUser(SignupRequest request, PasswordEncoder passwordEncoder) {
+    public static User createUser(SignupRequest request, String encodedPassword) {
         return User.builder()
                 .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(encodedPassword)
                 .birth(request.getBirth())
                 .name(request.getName())
                 .role(Role.ROLE_USER)
