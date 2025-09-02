@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<GlobalApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(GlobalApiResponse.fail("아이디 또는 비밀번호가 올바르지 않습니다.", "401"));
+                .body(GlobalApiResponse.fail("비밀번호가 올바르지 않습니다.", "401"));
     }
 
     /** 404 - 존재하지 않는 URL */

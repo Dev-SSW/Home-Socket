@@ -125,7 +125,7 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(wrongPassRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호가 올바르지 않습니다."))
+                .andExpect(jsonPath("$.message").value("비밀번호가 올바르지 않습니다."))
                 .andExpect(jsonPath("$.error").value("401"));
     }
 
