@@ -1,19 +1,16 @@
 package Homepage.practice.User;
 
 import Homepage.practice.Exception.GlobalApiResponse;
-import Homepage.practice.User.DTO.JwtRequest;
-import Homepage.practice.User.DTO.JwtResponse;
-import Homepage.practice.User.DTO.LoginRequest;
-import Homepage.practice.User.DTO.SignupRequest;
+import Homepage.practice.User.DTO.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Auth", description = "회원 관리 API")
 @RestController
@@ -48,5 +45,42 @@ public class AuthController {
     public ResponseEntity<GlobalApiResponse<?>> validateTest( @Valid @RequestBody JwtRequest request) {
         authService.validateTest(request);
         return ResponseEntity.ok(GlobalApiResponse.success("유효한 토큰입니다.", null));
+    }
+
+    @GetMapping("/admin/getAllUser")
+    @Operation(summary = "전체 유저 정보 가져오기")
+    public ResponseEntity<GlobalApiResponse<List<UserResponse>>> getAllUser() {
+        List<UserResponse> listUserResponse = userService.getAllUser();
+        return ResponseEntity.ok(GlobalApiResponse.success("전체 정보 조회 성공", listUserResponse));
+    }
+
+    @GetMapping("/user/getUser")
+    @Operation(summary = "특정 유저 정보 가져오기")
+    public ResponseEntity<GlobalApiResponse<UserResponse>> getUser(@AuthenticationPrincipal User user) {
+        UserResponse userResponse = userService.getUser(user.getUsername());
+        return ResponseEntity.ok(GlobalApiResponse.success("정보 조회 성공", userResponse));
+    }
+
+    @PutMapping("/user/updateUser")
+    @Operation(summary = "유저 정보 수정하기 (비밀번호 제외)")
+    public ResponseEntity<GlobalApiResponse<?>> updateUser(@AuthenticationPrincipal User user,
+                                                           @Valid @RequestBody UserUpdateRequest request) {
+        userService.updateUser(user, request);
+        return ResponseEntity.ok(GlobalApiResponse.success("정보 수정 성공", null));
+    }
+
+    @PutMapping("/user/updatePassword")
+    @Operation(summary = "비밀번호 수정하기")
+    public ResponseEntity<GlobalApiResponse<?>> updatePassword(@AuthenticationPrincipal User user,
+                                                               @Valid @RequestBody UserPassUpdateRequest request) {
+        userService.updatePassword(user, request);
+        return ResponseEntity.ok(GlobalApiResponse.success("비밀번호 수정 성공", null));
+    }
+
+    @DeleteMapping("/user/deleteUser")
+    @Operation(summary = "회원 탈퇴하기")
+    public ResponseEntity<GlobalApiResponse<?>> deleteUser(@AuthenticationPrincipal User user) {
+        userService.deleteUser(user);
+        return ResponseEntity.ok(GlobalApiResponse.success("회원 탈퇴 성공", null));
     }
 }

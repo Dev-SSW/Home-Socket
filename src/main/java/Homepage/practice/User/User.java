@@ -6,12 +6,12 @@ import Homepage.practice.Delivery.Address;
 import Homepage.practice.Order.Order;
 import Homepage.practice.Review.Review;
 import Homepage.practice.User.DTO.SignupRequest;
+import Homepage.practice.User.DTO.UserUpdateRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDate;
@@ -104,5 +104,16 @@ public class User implements UserDetails, OAuth2User {
                 .name(name)
                 .role(Role.ROLE_USER) // OAuth 사용자의 기본 역할 설정
                 .build();
+    }
+
+    /** 정보 수정 메서드 */
+    public void updateUser(UserUpdateRequest request) {
+        if (request.getName() != null) this.name = request.getName();
+        if (request.getBirth() != null) this.birth = request.getBirth();
+    }
+
+    /** 비밀번호 수정 메서드 */
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }
