@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true) // 요청에 예상치 못한 필드가 있어도 무시
-public class JwtRequest {
-    @NotBlank(message = "토큰을 입력하셔야 합니다.")
-    private String token;
+public class UserPassUpdateRequest {
+    @NotBlank(message = "현재 PASSWORD를 입력하셔야 합니다.")
+    private String currentPassword;
+    @NotBlank(message = "새 PASSWORD를 입력하셔야 합니다.")
+    private String newPassword;
 }

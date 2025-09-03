@@ -38,7 +38,7 @@ public class AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new UsernameAlreadyExists("이미 존재하는 아이디 입니다.");
         }
-        User user = User.createUser(request, passwordEncoder);
+        User user = User.createUser(request, passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
     }
 

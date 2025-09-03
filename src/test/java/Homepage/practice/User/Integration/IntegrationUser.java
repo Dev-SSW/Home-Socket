@@ -72,7 +72,7 @@ public class IntegrationUser {
     @DisplayName("회원가입 실패 - 아이디 중복")
     void signup_fail() throws Exception {
         // DB에 미리 사용자 저장
-        User existingUser = User.createUser(signupRequest, passwordEncoder);
+        User existingUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(existingUser);
 
         mockMvc.perform(post("/public/signup")
@@ -87,7 +87,7 @@ public class IntegrationUser {
     @DisplayName("로그인 성공")
     void login_success() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
 
         mockMvc.perform(post("/public/login")
@@ -116,7 +116,7 @@ public class IntegrationUser {
     @DisplayName("로그인 실패 - 잘못된 비밀번호")
     void login_wrong() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         LoginRequest wrongPassRequest = new LoginRequest("user1", "wrongPass");
 
@@ -125,7 +125,7 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(wrongPassRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호가 올바르지 않습니다."))
+                .andExpect(jsonPath("$.message").value("비밀번호가 올바르지 않습니다."))
                 .andExpect(jsonPath("$.error").value("401"));
     }
 
@@ -133,7 +133,7 @@ public class IntegrationUser {
     @DisplayName("토큰 재발급 성공")
     void tokenRenew_success() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
         JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateRefreshToken(new HashMap<>(), newUser));
@@ -152,7 +152,7 @@ public class IntegrationUser {
     @DisplayName("토큰 재발급 실패 - 변조된 리프레시 토큰")
     void tokenRenew_fail1() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
         String token = jwtUtils.generateRefreshToken(new HashMap<>(), newUser);
@@ -171,7 +171,7 @@ public class IntegrationUser {
     @DisplayName("토큰 재발급 실패 - 리프레시 토큰 만료")
     void tokenRenew_fail2() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 만료된 토큰 발급
         JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));
@@ -188,7 +188,7 @@ public class IntegrationUser {
     @DisplayName("토큰 유효성 검사 성공")
     void validateToken_success() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
         JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateToken(newUser));
@@ -205,7 +205,7 @@ public class IntegrationUser {
     @DisplayName("토큰 유효성 검사 실패 - 변조된 토큰")
     void validateToken_fail1() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
         String token = jwtUtils.generateToken(newUser);
@@ -224,7 +224,7 @@ public class IntegrationUser {
     @DisplayName("토큰 유효성 검사 실패 - 토큰 만료")
     void validateToken_fail2() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder);
+        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 만료된 토큰 발급
         JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));

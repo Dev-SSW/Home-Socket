@@ -1,11 +1,9 @@
 package Homepage.practice.User.DTO;
 
-import Homepage.practice.User.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +11,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties(ignoreUnknown = true) // 요청에 예상치 못한 필드가 있어도 무시
 public class SignupRequest {
     @NotBlank(message = "ID를 입력하셔야 합니다.")
     private String username;                // 회원 ID

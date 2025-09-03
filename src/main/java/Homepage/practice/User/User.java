@@ -1,18 +1,21 @@
 package Homepage.practice.User;
 
+import Homepage.practice.Cart.Cart;
+import Homepage.practice.CouponPublish.CouponPublish;
+import Homepage.practice.Delivery.Address;
+import Homepage.practice.Order.Order;
+import Homepage.practice.Review.Review;
 import Homepage.practice.User.DTO.SignupRequest;
+import Homepage.practice.User.DTO.UserUpdateRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Getter
@@ -28,6 +31,22 @@ public class User implements UserDetails, OAuth2User {
     private String name;                    // 회원 이름
     @Enumerated(EnumType.STRING)
     private Role role;                      // 회원 권한
+
+    /** 연관관계 */
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Address> addresses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Cart> carts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<CouponPublish> couponPublishes = new ArrayList<>();
 
     /** OAuth2User 구현부 */
     @Transient                              // 관리 대상에서 해당 필드나 메서드를 제외
@@ -68,10 +87,10 @@ public class User implements UserDetails, OAuth2User {
     }
 
     /** 생성 메서드 */
-    public static User createUser(SignupRequest request, PasswordEncoder passwordEncoder) {
+    public static User createUser(SignupRequest request, String encodedPassword) {
         return User.builder()
                 .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(encodedPassword)
                 .birth(request.getBirth())
                 .name(request.getName())
                 .role(Role.ROLE_USER)
@@ -85,5 +104,16 @@ public class User implements UserDetails, OAuth2User {
                 .name(name)
                 .role(Role.ROLE_USER) // OAuth 사용자의 기본 역할 설정
                 .build();
+    }
+
+    /** 정보 수정 메서드 */
+    public void updateUser(UserUpdateRequest request) {
+        if (request.getName() != null) this.name = request.getName();
+        if (request.getBirth() != null) this.birth = request.getBirth();
+    }
+
+    /** 비밀번호 수정 메서드 */
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }
