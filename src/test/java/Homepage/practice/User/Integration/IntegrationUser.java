@@ -80,7 +80,8 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(signupRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("이미 존재하는 아이디 입니다."));
+                .andExpect(jsonPath("$.message").value("이미 존재하는 아이디 입니다."))
+                .andExpect(jsonPath("$.error").value("USERNAME_EXISTS"));
     }
 
     @Test
@@ -97,7 +98,8 @@ public class IntegrationUser {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("로그인 성공"))
                 .andExpect(jsonPath("$.data.token").exists())
-                .andExpect(jsonPath("$.data.refreshToken").exists());
+                .andExpect(jsonPath("$.data.refreshToken").exists())
+                .andExpect(jsonPath("$.data.expirationTime").exists());
     }
 
     @Test
@@ -109,7 +111,8 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("아이디에 해당하는 회원이 없습니다."));
+                .andExpect(jsonPath("$.message").value("아이디에 해당하는 회원이 없습니다."))
+                .andExpect(jsonPath("$.error").value("USER_NOT_FOUND"));
     }
 
     @Test
@@ -145,7 +148,8 @@ public class IntegrationUser {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("재발급 성공"))
                 .andExpect(jsonPath("$.data.token").exists())
-                .andExpect(jsonPath("$.data.refreshToken").exists());
+                .andExpect(jsonPath("$.data.refreshToken").exists())
+                .andExpect(jsonPath("$.data.expirationTime").exists());
     }
 
     @Test
@@ -164,7 +168,8 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(jwtRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("유효하지 않은 리프레시 토큰입니다."));
+                .andExpect(jsonPath("$.message").value("유효하지 않은 리프레시 토큰입니다."))
+                .andExpect(jsonPath("$.error").value("JWT_INVALID"));
     }
 
     @Test
@@ -181,7 +186,8 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(jwtRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("리프레시 토큰이 만료되었습니다."));
+                .andExpect(jsonPath("$.message").value("리프레시 토큰이 만료되었습니다."))
+                .andExpect(jsonPath("$.error").value("JWT_INVALID"));
     }
 
     @Test
@@ -217,7 +223,8 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(jwtRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("유효하지 않은 토큰입니다."));
+                .andExpect(jsonPath("$.message").value("유효하지 않은 토큰입니다."))
+                .andExpect(jsonPath("$.error").value("JWT_INVALID"));
     }
 
     @Test
@@ -234,6 +241,7 @@ public class IntegrationUser {
                         .content(objectMapper.writeValueAsString(jwtRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("토큰이 만료되었습니다."));
+                .andExpect(jsonPath("$.message").value("토큰이 만료되었습니다."))
+                .andExpect(jsonPath("$.error").value("JWT_INVALID"));
     }
 }
