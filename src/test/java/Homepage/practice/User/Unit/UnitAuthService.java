@@ -69,6 +69,7 @@ public class UnitAuthService {
                 .birth(LocalDate.of(2000,1,1))
                 .name("홍길동")
                 .role(Role.ROLE_USER)
+                .tokenVersion(1)
                 .build();
     }
 
@@ -101,8 +102,8 @@ public class UnitAuthService {
         // given
         given(authenticationManager.authenticate(any())).willReturn(mock(Authentication.class));
         given(userRepository.findByUsername("user1")).willReturn(Optional.of(testUser));
-        given(jwtUtils.generateToken(testUser)).willReturn("jwtToken");
-        given(jwtUtils.generateRefreshToken(any(), any())).willReturn("refreshToken");
+        given(jwtUtils.generateToken(testUser, testUser.getTokenVersion())).willReturn("jwtToken");
+        given(jwtUtils.generateRefreshToken(any(), any(), any())).willReturn("refreshToken");
         // when
         JwtResponse response = authService.login(loginRequest);
         // then
@@ -131,8 +132,8 @@ public class UnitAuthService {
         given(userRepository.findByUsername("user1")).willReturn(Optional.of(testUser));
         given(jwtUtils.isTokenExpired("token1")).willReturn(false);
         given(jwtUtils.isTokenValid("token1", testUser)).willReturn(true);
-        given(jwtUtils.generateToken(testUser)).willReturn("AccessToken");
-        given(jwtUtils.generateRefreshToken(new HashMap<>(), testUser)).willReturn("RefreshToken");
+        given(jwtUtils.generateToken(testUser, testUser.getTokenVersion())).willReturn("AccessToken");
+        given(jwtUtils.generateRefreshToken(new HashMap<>(), testUser, testUser.getTokenVersion())).willReturn("RefreshToken");
         // when
         JwtResponse response = authService.tokenRenew(jwtRequest);
         // then

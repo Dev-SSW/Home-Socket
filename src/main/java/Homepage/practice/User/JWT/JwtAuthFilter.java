@@ -1,6 +1,9 @@
 package Homepage.practice.User.JWT;
 
 import Homepage.practice.Exception.GlobalApiResponse;
+import Homepage.practice.Exception.UserNotFound;
+import Homepage.practice.User.User;
+import Homepage.practice.User.UserRepository;
 import Homepage.practice.User.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -26,6 +29,7 @@ import java.util.Arrays;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /** 예외 발생 시 응답 작성 */
@@ -77,6 +81,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (!jwtUtils.isTokenValid(jwtToken, userDetails)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
                             GlobalApiResponse.fail("유효하지 않은 토큰입니다.", "JWT_INVALID"));
+                    return;
+                }
+
+                // 토큰 버전 체크 추가
+                Integer versionToken = jwtUtils.extractTokenVersion(jwtToken);
+                User user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));;
+                Integer versionDB = user.getTokenVersion();
+                if (!versionToken.equals(versionDB)) {
+                    write(response, HttpServletResponse.SC_UNAUTHORIZED,
+                            GlobalApiResponse.fail("토큰이 더 이상 유효하지 않습니다. 다시 로그인해주세요.", "JWT_INVALID"));
                     return;
                 }
 

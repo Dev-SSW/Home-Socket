@@ -136,7 +136,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
-        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateRefreshToken(new HashMap<>(), newUser));
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateRefreshToken(new HashMap<>(), newUser, newUser.getTokenVersion()));
 
         mockMvc.perform(post("/public/tokenRenew")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -155,7 +155,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
-        String token = jwtUtils.generateRefreshToken(new HashMap<>(), newUser);
+        String token = jwtUtils.generateRefreshToken(new HashMap<>(), newUser, newUser.getTokenVersion());
         String invaildToken = token.substring(0, token.length()-2) + "AB";
         JwtRequest jwtRequest = new JwtRequest(invaildToken);
 
@@ -191,7 +191,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
-        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateToken(newUser));
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateToken(newUser, newUser.getTokenVersion()));
 
         mockMvc.perform(post("/public/validateTest")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,7 +208,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 토큰 발급
-        String token = jwtUtils.generateToken(newUser);
+        String token = jwtUtils.generateToken(newUser, newUser.getTokenVersion());
         String invaildToken = token.substring(0, token.length()-2) + "AB";
         JwtRequest jwtRequest = new JwtRequest(invaildToken);
 

@@ -30,9 +30,10 @@ public class JwtUtils {
     }
 
     /** JWT 토큰 생성 */
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Integer tokenVersion) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())                                  // "sub" 클레임에 주입
+                .claim("tokenVersion", tokenVersion)
                 .setIssuedAt(new Date(System.currentTimeMillis()))                      // 발급 시간
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))  // 만료 시간
                 .signWith(key, SignatureAlgorithm.HS256)                                // HmacSHA256 키로 서명
@@ -40,10 +41,11 @@ public class JwtUtils {
     }
 
     /** JWT 리프레쉬 토큰 생성 */
-    public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails) {
+    public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails, Integer tokenVersion) {
         return Jwts.builder()
                 .setClaims(claims)                                                      // 추가 클레임 저장 가능
                 .setSubject(userDetails.getUsername())
+                .claim("tokenVersion", tokenVersion)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -74,6 +76,11 @@ public class JwtUtils {
     /** JWT 토큰 기간 만료 검사 (토큰이 만료되었으면 True) */
     public boolean isTokenExpired(String token) {
         return extractClaims(token, Claims::getExpiration).before(new Date());
+    }
+
+    /** 토큰 버전 추출 메서드 */
+    public Integer extractTokenVersion(String token) {
+        return extractClaims(token, claims -> claims.get("tokenVersion", Integer.class));
     }
 
     /** 테스트를 위한 만료된 토큰 생성 */
