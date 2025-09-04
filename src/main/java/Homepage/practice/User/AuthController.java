@@ -65,7 +65,7 @@ public class AuthController {
     @Operation(summary = "유저 정보 수정하기 (비밀번호 제외)")
     public ResponseEntity<GlobalApiResponse<?>> updateUser(@AuthenticationPrincipal User user,
                                                            @Valid @RequestBody UserUpdateRequest request) {
-        userService.updateUser(user, request);
+        userService.updateUser(user.getUsername(), request);
         return ResponseEntity.ok(GlobalApiResponse.success("정보 수정 성공", null));
     }
 
@@ -73,14 +73,14 @@ public class AuthController {
     @Operation(summary = "비밀번호 수정하기")
     public ResponseEntity<GlobalApiResponse<?>> updatePassword(@AuthenticationPrincipal User user,
                                                                @Valid @RequestBody UserPassUpdateRequest request) {
-        userService.updatePassword(user, request);
+        userService.updatePassword(user.getUsername(), request);
         return ResponseEntity.ok(GlobalApiResponse.success("비밀번호 수정 성공", null));
     }
 
     @DeleteMapping("/user/deleteUser")
     @Operation(summary = "회원 탈퇴하기")
     public ResponseEntity<GlobalApiResponse<?>> deleteUser(@AuthenticationPrincipal User user) {
-        userService.deleteUser(user);
+        userService.deleteUser(user.getUsername());
         return ResponseEntity.ok(GlobalApiResponse.success("회원 탈퇴 성공", null));
     }
 }
