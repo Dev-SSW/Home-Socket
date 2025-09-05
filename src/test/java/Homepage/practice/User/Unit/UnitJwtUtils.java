@@ -78,7 +78,7 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("만료된 토큰 생성")
     void expiredToken() {
-        String expiredToken = jwtUtils.generateExpiredToken(new HashMap<>(), testUser);
+        String expiredToken = jwtUtils.generateExpiredToken(new HashMap<>(), testUser, testUser.getTokenVersion());
         assertThrows(ExpiredJwtException.class, () -> jwtUtils.isTokenExpired(expiredToken));
     }
 

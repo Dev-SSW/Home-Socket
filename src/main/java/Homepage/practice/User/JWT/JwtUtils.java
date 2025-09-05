@@ -84,9 +84,10 @@ public class JwtUtils {
     }
 
     /** 테스트를 위한 만료된 토큰 생성 */
-    public String generateExpiredToken(HashMap<String, Object> claims, UserDetails userDetails) {
+    public String generateExpiredToken(HashMap<String, Object> claims, UserDetails userDetails, Integer tokenVersion) {
         return Jwts.builder()
                 .setClaims(claims)                                                      // 추가 클레임 저장 가능
+                .claim("tokenVersion", tokenVersion)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() - 1000))

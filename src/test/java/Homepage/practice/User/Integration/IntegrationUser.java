@@ -179,7 +179,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 만료된 토큰 발급
-        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser, newUser.getTokenVersion()));
 
         mockMvc.perform(post("/public/tokenRenew")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -234,7 +234,7 @@ public class IntegrationUser {
         User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
         userRepository.save(newUser);
         // 만료된 토큰 발급
-        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser));
+        JwtRequest jwtRequest = new JwtRequest(jwtUtils.generateExpiredToken(new HashMap<>(), newUser, newUser.getTokenVersion()));
 
         mockMvc.perform(post("/public/validateTest")
                         .contentType(MediaType.APPLICATION_JSON)
