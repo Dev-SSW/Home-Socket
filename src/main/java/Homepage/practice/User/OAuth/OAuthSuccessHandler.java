@@ -29,8 +29,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             User oAuth2User = (User) authentication.getPrincipal();
 
             // JWT 토큰 발급
-            String accessToken = jwtUtils.generateToken(oAuth2User);
-            String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), oAuth2User);
+            String accessToken = jwtUtils.generateToken(oAuth2User, oAuth2User.getTokenVersion());
+            String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), oAuth2User, oAuth2User.getTokenVersion());
 
             // RefreshToken을 HttpOnly 쿠키에 저장
             Cookie cookie = new Cookie("refreshToken", refreshToken);

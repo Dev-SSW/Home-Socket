@@ -58,22 +58,30 @@ public class UserService implements UserDetailsService {
 
     /** 유저 정보 수정하기 (비밀번호 제외) */
     @Transactional
-    public void updateUser(User user, UserUpdateRequest request) {
+    public void updateUser(String username, UserUpdateRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         user.updateUser(request);
     }
 
     /** 비밀번호 수정하기 */
     @Transactional
-    public void updatePassword(User user, UserPassUpdateRequest request) {
+    public void updatePassword(String username, UserPassUpdateRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new BadCredentialsException("비밀번호가 올바르지 않습니다.");
         }
         user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        user.incrementTokenVersion();
     }
 
     /** 회원 탈퇴하기 */
     @Transactional
-    public void deleteUser(User user) {
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
+        user.incrementTokenVersion();
         userRepository.deleteById(user.getId());
     }
 }

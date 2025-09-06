@@ -22,6 +22,7 @@ public class InitAdmin {
                     .birth(LocalDate.parse("2000-01-01"))
                     .name("관리자")
                     .role(Role.ROLE_ADMIN)
+                    .tokenVersion(1)
                     .build();
             userRepository.save(user);
         }

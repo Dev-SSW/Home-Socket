@@ -58,8 +58,8 @@ public class AuthService {
             SecurityContextHolder.getContext().setAuthentication(authenticate);
 
             // JWT 생성
-            var jwt = jwtUtils.generateToken(user);
-            var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
+            var jwt = jwtUtils.generateToken(user, user.getTokenVersion());
+            var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user, user.getTokenVersion());
 
             return JwtResponse.builder()
                     .token(jwt)
@@ -97,8 +97,8 @@ public class AuthService {
             }
 
             // 새로운 Access Token + Refresh Token 발급
-            String newAccessToken = jwtUtils.generateToken(user);
-            String newRefreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
+            String newAccessToken = jwtUtils.generateToken(user, user.getTokenVersion());
+            String newRefreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user, user.getTokenVersion());
 
             return JwtResponse.builder()
                     .token(newAccessToken)

@@ -31,13 +31,14 @@ public class UnitJwtUtils {
                 .birth(LocalDate.of(2000,1,1))
                 .name("홍길동")
                 .role(Role.ROLE_USER)
+                .tokenVersion(1)
                 .build();
     }
 
     @Test
     @DisplayName("액세스 토큰 생성")
     void generateToken_test() {
-        String token = jwtUtils.generateToken(testUser);
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         assertEquals("user1", jwtUtils.extractUsername(token));
         assertFalse(jwtUtils.isTokenExpired(token));
     }
@@ -45,7 +46,7 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("리프레시 토큰 생성")
     void generateRefreshToken_test() {
-        String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), testUser);
+        String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), testUser, testUser.getTokenVersion());
         assertEquals("user1", jwtUtils.extractUsername(refreshToken));
         assertFalse(jwtUtils.isTokenExpired(refreshToken));
     }
@@ -53,7 +54,7 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("회원 ID 추출")
     void extractUsername() {
-        String token = jwtUtils.generateToken(testUser);
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         String username = jwtUtils.extractUsername(token);
         assertEquals("user1", username);
     }
@@ -61,7 +62,7 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("토큰 유효성 검사")
     void tokenValid() {
-        String token = jwtUtils.generateToken(testUser);
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         Boolean booleanToken = jwtUtils.isTokenValid(token, testUser);
         assertTrue(booleanToken);
     }
@@ -69,7 +70,7 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("토큰 기간 만료 검사")
     void tokenExpired() {
-        String token = jwtUtils.generateToken(testUser);
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         Boolean booleanToken = jwtUtils.isTokenExpired(token);
         assertFalse(booleanToken);
     }
@@ -77,7 +78,15 @@ public class UnitJwtUtils {
     @Test
     @DisplayName("만료된 토큰 생성")
     void expiredToken() {
-        String expiredToken = jwtUtils.generateExpiredToken(new HashMap<>(), testUser);
+        String expiredToken = jwtUtils.generateExpiredToken(new HashMap<>(), testUser, testUser.getTokenVersion());
         assertThrows(ExpiredJwtException.class, () -> jwtUtils.isTokenExpired(expiredToken));
+    }
+
+    @Test
+    @DisplayName("토큰 버전 추출")
+    void extractTokenVersion() {
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
+        Integer currentVersion = jwtUtils.extractTokenVersion(token);
+        assertEquals(1, currentVersion);
     }
 }

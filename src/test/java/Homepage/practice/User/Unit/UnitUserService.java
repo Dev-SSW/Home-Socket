@@ -42,6 +42,7 @@ public class UnitUserService {
                 .birth(LocalDate.of(2000,1,1))
                 .name("홍길동")
                 .role(Role.ROLE_USER)
+                .tokenVersion(1)
                 .build();
     }
 

@@ -31,6 +31,7 @@ public class User implements UserDetails, OAuth2User {
     private String name;                    // 회원 이름
     @Enumerated(EnumType.STRING)
     private Role role;                      // 회원 권한
+    private Integer tokenVersion;           // 토큰 버전 추가 (jwt 토큰 버전)
 
     /** 연관관계 */
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
@@ -86,6 +87,11 @@ public class User implements UserDetails, OAuth2User {
         return true;
     }
 
+    /** 토큰 버전 올리기 */
+    public void incrementTokenVersion() {
+        this.tokenVersion += 1;
+    }
+
     /** 생성 메서드 */
     public static User createUser(SignupRequest request, String encodedPassword) {
         return User.builder()
@@ -94,6 +100,7 @@ public class User implements UserDetails, OAuth2User {
                 .birth(request.getBirth())
                 .name(request.getName())
                 .role(Role.ROLE_USER)
+                .tokenVersion(1)
                 .build();
     }
 
@@ -103,6 +110,7 @@ public class User implements UserDetails, OAuth2User {
                 .username(username)
                 .name(name)
                 .role(Role.ROLE_USER) // OAuth 사용자의 기본 역할 설정
+                .tokenVersion(1)
                 .build();
     }
 
