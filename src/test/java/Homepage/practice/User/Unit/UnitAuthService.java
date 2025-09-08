@@ -78,7 +78,8 @@ public class UnitAuthService {
     void signup_success() {
         // given
         given(userRepository.existsByUsername("user1")).willReturn(false);
-        given(passwordEncoder.encode("pass1")).willReturn("pass1");
+        String encodedPass = passwordEncoder.encode("pass1");
+        given(passwordEncoder.encode("pass1")).willReturn(encodedPass);
         // when
         authService.signup(signupRequest);
         // then
@@ -89,7 +90,7 @@ public class UnitAuthService {
     @DisplayName("회원 가입 실패 - 아이디 중복")
     void signup_fail() {
         // given
-        given(userRepository.existsByUsername("user1")).willReturn(true);
+        given(userRepository.existsByUsername("user1")).willReturn(true);   // 에러를 발생시킴
         // when & then
         assertThatThrownBy(() -> authService.signup(signupRequest))
                 .isInstanceOf(UsernameAlreadyExists.class)
@@ -103,7 +104,7 @@ public class UnitAuthService {
         given(authenticationManager.authenticate(any())).willReturn(mock(Authentication.class));
         given(userRepository.findByUsername("user1")).willReturn(Optional.of(testUser));
         given(jwtUtils.generateToken(testUser, testUser.getTokenVersion())).willReturn("jwtToken");
-        given(jwtUtils.generateRefreshToken(any(), any(), any())).willReturn("refreshToken");
+        given(jwtUtils.generateRefreshToken(new HashMap<>(), testUser, testUser.getTokenVersion())).willReturn("refreshToken");
         // when
         JwtResponse response = authService.login(loginRequest);
         // then
@@ -115,8 +116,8 @@ public class UnitAuthService {
     @DisplayName("로그인 실패 - 존재하지 않는 유저")
     void login_fail() {
         // given
-        given(authenticationManager.authenticate(any())).willThrow(
-                new InternalAuthenticationServiceException("fail", new UserNotFound("아이디에 해당하는 회원이 없습니다."))
+        given(authenticationManager.authenticate(any())).willThrow(         //에러를 발생시킴
+                new InternalAuthenticationServiceException("에러 메세지", new UserNotFound("아이디에 해당하는 회원이 없습니다."))
         );
         // when & then
         assertThatThrownBy(() -> authService.login(loginRequest))
@@ -147,7 +148,7 @@ public class UnitAuthService {
         // given
         given(jwtUtils.extractUsername("token1")).willReturn("user1");
         given(userRepository.findByUsername("user1")).willReturn(Optional.of(testUser));
-        given(jwtUtils.isTokenExpired("token1")).willReturn(true);
+        given(jwtUtils.isTokenExpired("token1")).willReturn(true);          // 에러를 발생시킴
         // when & then
         assertThatThrownBy(() -> authService.tokenRenew(jwtRequest))
                 .isInstanceOf(JwtInvalid.class)
@@ -172,7 +173,7 @@ public class UnitAuthService {
         // given
         given(jwtUtils.extractUsername("token1")).willReturn("user1");
         given(userRepository.findByUsername("user1")).willReturn(Optional.of(testUser));
-        given(jwtUtils.isTokenExpired("token1")).willReturn(true);
+        given(jwtUtils.isTokenExpired("token1")).willReturn(true);    // 에러를 발생시킴
         // when & then
         assertThatThrownBy(() -> authService.validateTest(jwtRequest))
                 .isInstanceOf(JwtInvalid.class)

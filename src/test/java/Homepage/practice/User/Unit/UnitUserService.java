@@ -61,9 +61,9 @@ public class UnitUserService {
     @DisplayName("유저 조회 실패 - 존재하지 않는 유저")
     void loadUserByUsername_fail() {
         // given
-        given(userRepository.findByUsername("unknown")).willReturn(Optional.empty());
+        given(userRepository.findByUsername("user1")).willReturn(Optional.empty());     // 에러를 발생시킴
         // when & then
-        assertThatThrownBy(() -> userService.loadUserByUsername("unknown"))
+        assertThatThrownBy(() -> userService.loadUserByUsername("user1"))
                 .isInstanceOf(UserNotFound.class)
                 .hasMessage("아이디에 해당하는 회원이 없습니다.");
     }
