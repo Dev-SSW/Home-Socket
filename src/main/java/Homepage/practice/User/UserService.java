@@ -46,10 +46,11 @@ public class UserService implements UserDetailsService {
 
     /** 유저 정보 수정하기 (비밀번호 제외) */
     @Transactional
-    public void updateUser(String username, UserUpdateRequest request) {
+    public UserResponse updateUser(String username, UserUpdateRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         user.updateUser(request);
+        return UserResponse.fromEntity(user);
     }
 
     /** 비밀번호 수정하기 */

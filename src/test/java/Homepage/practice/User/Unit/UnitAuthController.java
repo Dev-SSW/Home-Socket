@@ -258,6 +258,9 @@ public class UnitAuthController {
     @Test
     @DisplayName("유저 정보 수정하기 성공 (비밀번호 제외)")
     void updateUser() throws Exception {
+        UserResponse resp = UserResponse.builder()
+                .id(1L).username("user1").name("송길똥").role(Role.ROLE_USER).build();
+        given(userService.updateUser(eq("user1"), any(UserUpdateRequest.class))).willReturn(resp);
         mockMvc.perform(put("/user/updateUser")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest))
@@ -265,7 +268,8 @@ public class UnitAuthController {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("정보 수정 성공"));
+                .andExpect(jsonPath("$.message").value("정보 수정 성공"))
+                .andExpect(jsonPath("$.data.name").value("송길똥"));
     }
 
     @Test
