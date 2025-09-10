@@ -294,7 +294,8 @@ public class IntegrationUser {
                         .with(user(newUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("정보 수정 성공"));
+                .andExpect(jsonPath("$.message").value("정보 수정 성공"))
+                .andExpect(jsonPath("$.data.name").value("송길똥"));
     }
 
     @Test
