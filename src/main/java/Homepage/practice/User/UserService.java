@@ -33,13 +33,7 @@ public class UserService implements UserDetailsService {
     public List<UserResponse> getAllUser() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> UserResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .birth(user.getBirth())
-                        .name(user.getName())
-                        .role(user.getRole())
-                        .build())
+                .map(UserResponse::fromEntity)
                 .toList();
     }
 
@@ -47,13 +41,7 @@ public class UserService implements UserDetailsService {
     public UserResponse getUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .birth(user.getBirth())
-                .name(user.getName())
-                .role(user.getRole())
-                .build();
+        return UserResponse.fromEntity(user);
     }
 
     /** 유저 정보 수정하기 (비밀번호 제외) */

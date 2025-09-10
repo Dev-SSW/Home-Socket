@@ -1,6 +1,7 @@
 package Homepage.practice.User.DTO;
 
 import Homepage.practice.User.Role;
+import Homepage.practice.User.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,4 +22,14 @@ public class UserResponse {
     private LocalDate birth;                // 회원 생년월일
     private String name;                    // 회원 이름
     private Role role;                      // 회원 권한
+
+    public static UserResponse fromEntity(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .birth(user.getBirth())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
+    }
 }
