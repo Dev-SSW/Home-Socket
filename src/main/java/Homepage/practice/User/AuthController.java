@@ -63,10 +63,10 @@ public class AuthController {
 
     @PutMapping("/user/updateUser")
     @Operation(summary = "유저 정보 수정하기 (비밀번호 제외)")
-    public ResponseEntity<GlobalApiResponse<?>> updateUser(@AuthenticationPrincipal User user,
+    public ResponseEntity<GlobalApiResponse<UserResponse>> updateUser(@AuthenticationPrincipal User user,
                                                            @Valid @RequestBody UserUpdateRequest request) {
-        userService.updateUser(user.getUsername(), request);
-        return ResponseEntity.ok(GlobalApiResponse.success("정보 수정 성공", null));
+        UserResponse userResponse = userService.updateUser(user.getUsername(), request);
+        return ResponseEntity.ok(GlobalApiResponse.success("정보 수정 성공", userResponse));
     }
 
     @PutMapping("/user/updatePassword")
