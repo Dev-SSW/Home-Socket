@@ -111,4 +111,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "OAUTH_PROVIDER_NOT_FOUND"));
     }
+
+    /** 카테고리 부모 404 오류 */
+    @ExceptionHandler(CategoryParentNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCategoryParentNotFound(CategoryParentNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "CATEGORY_PARENT_NOT_FOUND"));
+    }
+
+    /** 카테고리 404 오류 */
+    @ExceptionHandler(CategoryNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCategoryNotFound(CategoryNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "CATEGORY_NOT_FOUND"));
+    }
 }
