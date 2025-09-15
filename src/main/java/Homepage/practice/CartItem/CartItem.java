@@ -22,4 +22,11 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "item_id")
     private Item item;
+
+    /** 연관관계 편의 메서드 */
+    public void setCart(Cart cart) { this.cart = cart; }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
 }

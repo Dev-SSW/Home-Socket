@@ -19,4 +19,16 @@ public class Address {
     /** 연관관계 */
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
     private User user;
+
+    /*
+    // 연관 삭제가 필요 없어 단방향으로 변경
+    @OneToMany(mappedBy = "address")
+    private List<Delivery> deliveries = new ArrayList<>();
+    */
+
+    /** 연관관계 편의 메서드 */
+    public void setUser(User user) {
+        this.user = user;
+    }
+
 }

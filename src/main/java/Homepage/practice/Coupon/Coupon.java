@@ -1,8 +1,6 @@
 package Homepage.practice.Coupon;
 
 import Homepage.practice.CouponPublish.CouponPublish;
-import Homepage.practice.Order.Order;
-import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,4 +25,10 @@ public class Coupon {
 
     @OneToMany(mappedBy = "coupon",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
+
+    /** 연관관계 편의 메서드 */
+    public void addCouponPublish(CouponPublish couponPublish) {
+        couponPublishes.add(couponPublish);
+        couponPublish.setCoupon(this);
+    }
 }

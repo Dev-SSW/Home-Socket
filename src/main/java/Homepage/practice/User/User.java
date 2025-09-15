@@ -49,6 +49,28 @@ public class User implements UserDetails, OAuth2User {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
 
+    /** 연관관계 편의 메서드 */
+    public void addAddress(Address address) {
+        addresses.add(address);
+        address.setUser(this);
+    }
+    public void addReview(Review review) {
+        reviews.add(review);
+        review.setUser(this);
+    }
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setUser(this);
+    }
+    public void addCart(Cart cart) {
+        carts.add(cart);
+        cart.setUser(this);
+    }
+    public void addCouponPublishes(CouponPublish couponPublish) {
+        couponPublishes.add(couponPublish);
+        couponPublish.setUser(this);
+    }
+
     /** OAuth2User 구현부 */
     @Transient                              // 관리 대상에서 해당 필드나 메서드를 제외
     private Map<String, Object> attributes; // OAuth2 속성

@@ -2,6 +2,7 @@ package Homepage.practice.Item;
 
 import Homepage.practice.CartItem.CartItem;
 import Homepage.practice.Category.Category;
+import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.Review.Review;
 import jakarta.persistence.*;
@@ -36,4 +37,19 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<CartItem> cartItems = new ArrayList<>();
 
+    /** 연관관계 편의 메서드 */
+    public void addReview(Review review) {
+        reviews.add(review);
+        review.setItem(this);
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.setItem(this);
+    }
+
+    public void addCartItem(CartItem cartItem) {
+        cartItems.add(cartItem);
+        cartItem.setItem(this);
+    }
 }
