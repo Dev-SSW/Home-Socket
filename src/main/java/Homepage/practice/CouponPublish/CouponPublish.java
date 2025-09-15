@@ -26,4 +26,10 @@ public class CouponPublish {
 
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "coupon_id")
     private Coupon coupon;
+
+    /** 연관관계 편의 메서드 */
+    public void setUser(User user) { this.user = user; }
+    public void setCoupon(Coupon coupon) {
+        this.coupon = coupon;
+    }
 }

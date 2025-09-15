@@ -1,6 +1,7 @@
 package Homepage.practice.Delivery;
 
 import Homepage.practice.Order.Order;
+import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,4 +23,9 @@ public class Delivery {
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;              //READY, SHIPPING, COMPLETE, CANCELLED
+
+    /** 연관관계 편의 메서드 */
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }

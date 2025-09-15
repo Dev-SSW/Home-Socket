@@ -1,6 +1,7 @@
 package Homepage.practice.Order;
 
 import Homepage.practice.Coupon.Coupon;
+import Homepage.practice.Delivery.Address;
 import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;
@@ -32,4 +33,19 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
     private User user;
+
+    /** 연관관계 편의 메서드 */
+    public void setDelivery(Delivery delivery) {
+        this.delivery = delivery;
+        delivery.setOrder(this);
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

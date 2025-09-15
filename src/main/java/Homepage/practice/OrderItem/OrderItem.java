@@ -22,4 +22,13 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "item_id")
     private Item item;
+
+    /** 연관관계 편의 메서드 */
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
 }

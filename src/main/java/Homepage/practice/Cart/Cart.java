@@ -1,6 +1,7 @@
 package Homepage.practice.Cart;
 
 import Homepage.practice.CartItem.CartItem;
+import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,4 +24,14 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartItem> cartItems = new ArrayList<>();
+
+    /** 연관관계 편의 메서드 */
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void addCartItem(CartItem cartItem) {
+        cartItems.add(cartItem);
+        cartItem.setCart(this);
+    }
 }

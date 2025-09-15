@@ -27,4 +27,8 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "item_id")
     private Item item;
 
+    /** 연관관계 편의 메서드 */
+    public void setUser(User user) { this.user = user; }
+
+    public void setItem(Item item) { this.item = item; }
 }
