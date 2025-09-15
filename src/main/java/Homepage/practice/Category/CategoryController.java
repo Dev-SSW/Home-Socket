@@ -26,14 +26,14 @@ public class CategoryController {
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리 생성 성공", response));
     }
 
-    @GetMapping("/admin/category/getAllCategory")
+    @GetMapping("/public/category/getAllCategory")
     @Operation(summary = "전체 카테고리 가져오기")
     public ResponseEntity<GlobalApiResponse<List<CategoryResponse>>> getAllCategory() {
         List<CategoryResponse> responses = categoryService.getAllCategory();
         return ResponseEntity.ok(GlobalApiResponse.success("전체 카테고리 가져오기 성공", responses));
     }
 
-    @GetMapping("/admin/category/getCategory/{categoryId}")
+    @GetMapping("/public/category/getCategory/{categoryId}")
     @Operation(summary = "특정 카테고리 가져오기")
     public ResponseEntity<GlobalApiResponse<CategoryResponse>> getCategory(@PathVariable(name = "categoryId") Long categoryId) {
         CategoryResponse response = categoryService.getCategory(categoryId);
