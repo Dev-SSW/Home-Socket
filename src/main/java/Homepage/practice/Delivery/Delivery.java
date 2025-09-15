@@ -1,7 +1,6 @@
 package Homepage.practice.Delivery;
 
 import Homepage.practice.Order.Order;
-import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 

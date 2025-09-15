@@ -1,7 +1,6 @@
 package Homepage.practice.User;
 
 import Homepage.practice.Cart.Cart;
-import Homepage.practice.Category.Category;
 import Homepage.practice.CouponPublish.CouponPublish;
 import Homepage.practice.Delivery.Address;
 import Homepage.practice.Order.Order;

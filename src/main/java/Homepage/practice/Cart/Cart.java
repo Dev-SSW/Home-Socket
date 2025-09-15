@@ -1,7 +1,6 @@
 package Homepage.practice.Cart;
 
 import Homepage.practice.CartItem.CartItem;
-import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;

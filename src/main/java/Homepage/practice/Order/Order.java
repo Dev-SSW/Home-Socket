@@ -1,7 +1,5 @@
 package Homepage.practice.Order;
 
-import Homepage.practice.Coupon.Coupon;
-import Homepage.practice.Delivery.Address;
 import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;

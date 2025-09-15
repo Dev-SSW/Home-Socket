@@ -1,9 +1,6 @@
 package Homepage.practice.Coupon;
 
 import Homepage.practice.CouponPublish.CouponPublish;
-import Homepage.practice.Order.Order;
-import Homepage.practice.OrderItem.OrderItem;
-import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 
