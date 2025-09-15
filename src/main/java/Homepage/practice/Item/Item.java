@@ -2,7 +2,9 @@ package Homepage.practice.Item;
 
 import Homepage.practice.CartItem.CartItem;
 import Homepage.practice.Category.Category;
-import Homepage.practice.Delivery.Delivery;
+import Homepage.practice.Exception.ItemOutOfStockException;
+import Homepage.practice.Item.DTO.ItemRequest;
+import Homepage.practice.Item.DTO.ItemUpdateRequest;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.Review.Review;
 import jakarta.persistence.*;
@@ -51,5 +53,47 @@ public class Item {
     public void addCartItem(CartItem cartItem) {
         cartItems.add(cartItem);
         cartItem.setItem(this);
+    }
+
+    /** 생성 메서드 */
+    public static Item createItem(Category category, ItemRequest request) {
+        return Item.builder()
+                .category(category)
+                .name(request.getName())
+                .stock(request.getStock())
+                .itemPrice(request.getItemPrice())
+                .avgStar(0)
+                .build();
+    }
+
+    /** 수정 메서드 */
+    public Item updateItem(ItemUpdateRequest request) {
+        if (request.getName() != null) {
+            this.name = request.getName();
+        }
+        if (request.getStock() != null) {
+            this.stock = request.getStock();
+        }
+        if (request.getItemPrice() != null) {
+            this.itemPrice = request.getItemPrice();
+        }
+        return this;
+    }
+
+    /** 비즈니스 로직 */
+    public void addStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    public void removeStock(int quantity) {
+        int restStock = this.stock - quantity;
+        if (restStock < 0) {
+            throw new ItemOutOfStockException("재고가 부족합니다.");
+        }
+        this.stock = restStock;
+    }
+
+    public void updateAvgStar(float newStar, int reviewCount) {
+        this.avgStar = ((this.avgStar * (reviewCount - 1)) + newStar) / reviewCount;
     }
 }

@@ -125,4 +125,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "CATEGORY_NOT_FOUND"));
     }
+
+    /** 아이템 재고 부족 오류 */
+    @ExceptionHandler(ItemOutOfStockException.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleItemOutOfStockException(ItemOutOfStockException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ITEM_OUT_OF_STOCK"));
+    }
+
+    /** 아이템 404 오류 */
+    @ExceptionHandler(ItemNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleItemNotFound(ItemNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ITEM_NOT_FOUND"));
+    }
 }
