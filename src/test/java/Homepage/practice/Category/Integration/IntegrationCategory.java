@@ -79,7 +79,7 @@ public class IntegrationCategory {
 
     @Test
     @DisplayName("전체 카테고리 정보 가져오기 성공")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser
     void getAllCategory_success() throws Exception {
         CategoryRequest categoryRequest1 = new CategoryRequest("category1", 0, 1, null);
         CategoryRequest categoryRequest2 = new CategoryRequest("category2", 0, 2, null);
@@ -88,7 +88,7 @@ public class IntegrationCategory {
         categoryRepository.save(category1);
         categoryRepository.save(category2);
 
-        mockMvc.perform(get("/admin/category/getAllCategory")
+        mockMvc.perform(get("/public/category/getAllCategory")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -99,13 +99,13 @@ public class IntegrationCategory {
 
     @Test
     @DisplayName("특정 카테고리 정보 가져오기 성공")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser
     void getCategory_success() throws Exception {
         CategoryRequest categoryRequest1 = new CategoryRequest("category1", 0, 1, null);
         Category category1 = Category.createCategory(categoryRequest1, null);
         categoryRepository.save(category1);
 
-        mockMvc.perform(get("/admin/category/getCategory/{categoryId}", category1.getId())
+        mockMvc.perform(get("/public/category/getCategory/{categoryId}", category1.getId())
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -120,9 +120,9 @@ public class IntegrationCategory {
 
     @Test
     @DisplayName("특정 카테고리 정보 가져오기 실패 - 해당 카테고리 없음")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser
     void getCategory_fail() throws Exception {
-        mockMvc.perform(get("/admin/category/getCategory/{categoryId}", 1L)
+        mockMvc.perform(get("/public/category/getCategory/{categoryId}", 1L)
                         .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))

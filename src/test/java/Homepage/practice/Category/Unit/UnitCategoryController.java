@@ -82,7 +82,7 @@ public class UnitCategoryController {
 
     @Test
     @DisplayName("전체 카테고리 정보 가져오기 성공")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser
     void getAllCategory_success() throws Exception {
         List<CategoryResponse> list = List.of(
                 CategoryResponse.builder()
@@ -92,7 +92,7 @@ public class UnitCategoryController {
         );
         given(categoryService.getAllCategory()).willReturn(list);
 
-        mockMvc.perform(get("/admin/category/getAllCategory")
+        mockMvc.perform(get("/public/category/getAllCategory")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -103,7 +103,7 @@ public class UnitCategoryController {
 
     @Test
     @DisplayName("특정 카테고리 정보 가져오기 성공")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser
     void getCategory_success() throws Exception {
         // given
         CategoryResponse categoryResponse = CategoryResponse.builder()
@@ -111,7 +111,7 @@ public class UnitCategoryController {
         given(categoryService.getCategory(1L)).willReturn(categoryResponse);
 
         // when & then
-        mockMvc.perform(get("/admin/category/getCategory/{categoryId}", 1L)
+        mockMvc.perform(get("/public/category/getCategory/{categoryId}", 1L)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
