@@ -18,7 +18,7 @@ public class Cart {
     private Long id;
 
     /** 연관관계 */
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
+    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
