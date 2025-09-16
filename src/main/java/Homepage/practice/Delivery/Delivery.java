@@ -14,7 +14,7 @@ public class Delivery {
     private Long id;
 
     /** 연관관계 */
-    @OneToOne @JoinColumn(name = "order_id")    // 주인이 아닌 쪽만 fetch = FetchType.LAZY 설정
+    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "order_id")
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "address_id")
