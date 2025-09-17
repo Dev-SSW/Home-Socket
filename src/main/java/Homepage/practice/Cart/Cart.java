@@ -33,4 +33,18 @@ public class Cart {
         cartItems.add(cartItem);
         cartItem.setCart(this);
     }
+
+    /** 생성 메서드 */
+    public static Cart createCart(User user) {
+        Cart cart = Cart.builder().build();
+        user.setCart(cart);
+        return cart;
+    }
+
+    /** 비즈니스 로직 */
+    public int getTotalPrice() {
+        return cartItems.stream()
+                .mapToInt(CartItem::getTotalPrice)
+                .sum();
+    }
 }
