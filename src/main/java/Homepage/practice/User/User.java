@@ -34,15 +34,19 @@ public class User implements UserDetails, OAuth2User {
     private Integer tokenVersion;           // 토큰 버전 추가 (jwt 토큰 버전)
 
     /** 연관관계 */
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Address> addresses = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
 

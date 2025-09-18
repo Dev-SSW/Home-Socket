@@ -23,6 +23,7 @@ public class Coupon {
     private LocalDate validEnd;     // 쿠폰 자체 사용 기한 (고정형 만료)
     private LocalDate afterIssue;   // 유저 발급 후 유효 기간 (상대형 만료)
 
+    @Builder.Default
     @OneToMany(mappedBy = "coupon",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
 
