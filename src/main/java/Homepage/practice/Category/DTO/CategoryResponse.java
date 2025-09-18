@@ -30,8 +30,7 @@ public class CategoryResponse {
                 .depth(category.getDepth())
                 .orderIndex(category.getOrderIndex())
                 .parentId(category.getParent() != null ? category.getParent().getId() : null)
-                .childrenIds(category.getChildren() != null ?
-                        category.getChildren().stream().map(Category::getId).collect(Collectors.toList()) : List.of())
+                .childrenIds(category.getChildren().stream().map(Category::getId).collect(Collectors.toList()))
                 .build();
     }
 }

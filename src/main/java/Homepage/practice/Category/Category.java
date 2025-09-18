@@ -21,6 +21,7 @@ public class Category {
     private int orderIndex;     // 정렬용 인덱스
 
     /** 연관관계 */
+    @Builder.Default
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Category> children = new ArrayList<>();    // 자식 카테고리 (PK 소유)
 

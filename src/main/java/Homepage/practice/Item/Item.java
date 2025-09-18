@@ -30,12 +30,15 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "category_id")
     private Category category;
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<CartItem> cartItems = new ArrayList<>();
 
