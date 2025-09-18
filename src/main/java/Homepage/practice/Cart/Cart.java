@@ -18,9 +18,10 @@ public class Cart {
     private Long id;
 
     /** 연관관계 */
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
+    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartItem> cartItems = new ArrayList<>();
 
@@ -32,5 +33,19 @@ public class Cart {
     public void addCartItem(CartItem cartItem) {
         cartItems.add(cartItem);
         cartItem.setCart(this);
+    }
+
+    /** 생성 메서드 */
+    public static Cart createCart(User user) {
+        Cart cart = Cart.builder().build();
+        user.setCart(cart);
+        return cart;
+    }
+
+    /** 비즈니스 로직 */
+    public int getTotalPrice() {
+        return cartItems.stream()
+                .mapToInt(CartItem::getTotalPrice)
+                .sum();
     }
 }

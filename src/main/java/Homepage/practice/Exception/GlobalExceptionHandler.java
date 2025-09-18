@@ -139,4 +139,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "ITEM_NOT_FOUND"));
     }
+
+    /** 장바구니 아이템 404 오류 */
+    @ExceptionHandler(CartItemNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCartItemNotFound(CartItemNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "CART_ITEM_NOT_FOUND"));
+    }
+
+    /** 장바구니 404 오류 */
+    @ExceptionHandler(CartNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCartNotFound(CartNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "CART_NOT_FOUND"));
+    }
+
+    /** 장바구니 소유자 오류 */
+    @ExceptionHandler(CartAccessDenied.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCartAccessDenied(CartAccessDenied ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "CART_ACCESS_DENIED"));
+    }
 }

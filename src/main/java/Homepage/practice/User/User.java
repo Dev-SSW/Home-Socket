@@ -34,20 +34,24 @@ public class User implements UserDetails, OAuth2User {
     private Integer tokenVersion;           // 토큰 버전 추가 (jwt 토큰 버전)
 
     /** 연관관계 */
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Address> addresses = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<Cart> carts = new ArrayList<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    private Cart cart;
 
     /** 연관관계 편의 메서드 */
     public void addAddress(Address address) {
@@ -62,13 +66,13 @@ public class User implements UserDetails, OAuth2User {
         orders.add(order);
         order.setUser(this);
     }
-    public void addCart(Cart cart) {
-        carts.add(cart);
-        cart.setUser(this);
-    }
     public void addCouponPublishes(CouponPublish couponPublish) {
         couponPublishes.add(couponPublish);
         couponPublish.setUser(this);
+    }
+    public void setCart(Cart cart) {
+        this.cart = cart;
+        cart.setUser(this);
     }
 
     /** OAuth2User 구현부 */
