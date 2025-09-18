@@ -34,7 +34,7 @@ public class CartController {
         return ResponseEntity.ok(GlobalApiResponse.success("장바구니 아이템 추가 성공", response));
     }
 
-    @GetMapping("/user/cart/updateItem")
+    @PutMapping("/user/cart/updateItem")
     @Operation(summary = "장바구니 안 아이템의 수량 변경")
     public ResponseEntity<GlobalApiResponse<CartResponse>> updateItem(@AuthenticationPrincipal User user,
                                                                       @Valid @RequestBody CartItemUpdateRequest request) {
@@ -42,7 +42,7 @@ public class CartController {
         return ResponseEntity.ok(GlobalApiResponse.success("장바구니 안 아이템의 수량 변경 성공", response));
     }
 
-    @GetMapping("/user/cart/{cartItemId}/deleteItem")
+    @DeleteMapping("/user/cart/{cartItemId}/deleteItem")
     @Operation(summary = "장바구니 안 아이템 삭제하기")
     public ResponseEntity<GlobalApiResponse<CartResponse>> deleteItem(@AuthenticationPrincipal User user,
                                                                       @PathVariable(name = "cartItemId") Long cartItemId) {
@@ -50,7 +50,7 @@ public class CartController {
         return ResponseEntity.ok(GlobalApiResponse.success("장바구니 안 아이템 삭제하기 성공", response));
     }
 
-    @GetMapping("/user/cart/clearCart")
+    @DeleteMapping("/user/cart/clearCart")
     @Operation(summary = "장바구니 비우기")
     public ResponseEntity<GlobalApiResponse<CartResponse>> clearCart(@AuthenticationPrincipal User user) {
         CartResponse response = cartService.clearCart(user);
