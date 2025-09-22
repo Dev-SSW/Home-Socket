@@ -1,5 +1,7 @@
 package Homepage.practice.Coupon;
 
+import Homepage.practice.Coupon.DTO.CouponRequest;
+import Homepage.practice.Coupon.DTO.CouponUpdateRequest;
 import Homepage.practice.CouponPublish.CouponPublish;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +23,7 @@ public class Coupon {
     private BigDecimal discount;    // 할인 가격
     private LocalDate validStart;   // 쿠폰 자체 사용 기한 (고정형 시작)
     private LocalDate validEnd;     // 쿠폰 자체 사용 기한 (고정형 만료)
-    private LocalDate afterIssue;   // 유저 발급 후 유효 기간 (상대형 만료)
+    private int afterIssue;         // 유저 발급 후 유효 기간 (상대형 만료)
 
     @Builder.Default
     @OneToMany(mappedBy = "coupon",cascade = CascadeType.ALL)
@@ -31,5 +33,25 @@ public class Coupon {
     public void addCouponPublish(CouponPublish couponPublish) {
         couponPublishes.add(couponPublish);
         couponPublish.setCoupon(this);
+    }
+
+    /** 생성 메서드 */
+    public static Coupon createCoupon(CouponRequest request) {
+        return Coupon.builder()
+                .name(request.getName())
+                .discount(request.getDiscount())
+                .validStart(request.getValidStart())
+                .validEnd(request.getValidEnd())
+                .afterIssue(request.getAfterIssue())
+                .build();
+    }
+
+    /** 수정 메서드 */
+    public void updateCoupon(CouponUpdateRequest request) {
+        if (request.getName() != null) this.name = request.getName();
+        if (request.getDiscount() != null) this.discount = request.getDiscount();
+        if (request.getValidStart() != null) this.validStart = request.getValidStart();
+        if (request.getValidEnd() != null) this.validEnd = request.getValidEnd();
+        if (request.getAfterIssue() != null) this.afterIssue = request.getAfterIssue();
     }
 }
