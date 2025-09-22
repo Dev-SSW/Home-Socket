@@ -3,6 +3,8 @@ package Homepage.practice.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -12,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /** 회원 ID가 이미 존재하는지 여부 확인 */
     boolean existsByUsername(String username);
+
+    /** 해당 생일을 가진 유저 찾기 */
+    List<User> findAllByBirthday(LocalDate today);
 }
