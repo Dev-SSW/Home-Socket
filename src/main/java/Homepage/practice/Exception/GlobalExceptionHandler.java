@@ -15,7 +15,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 기본 예외 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 400 - DTO / @Valid 실패 */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<GlobalApiResponse<?>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
@@ -48,13 +48,6 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail("요청 본문을 읽을 수 없습니다.", "400"));
     }
 
-    /** 401 - 로그인 오류 문제 */
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<GlobalApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(GlobalApiResponse.fail("비밀번호가 올바르지 않습니다.", "401"));
-    }
-
     /** 404 - 존재하지 않는 URL */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<GlobalApiResponse<?>> handleNoHandlerFound(NoHandlerFoundException ex) {
@@ -84,6 +77,14 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail("서버 내부 오류가 발생했습니다.", "500"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 회원 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 401 - 로그인 오류 문제 */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(GlobalApiResponse.fail("비밀번호가 올바르지 않습니다.", "401"));
+    }
+
     /** 회원 404 오류 */
     @ExceptionHandler(UserNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleUserNotFound(UserNotFound ex) {
@@ -98,6 +99,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "USERNAME_EXISTS"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ JWT ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** JWT 유효성 검사 (토큰 만료, 유효성) */
     @ExceptionHandler(JwtInvalid.class)
     public ResponseEntity<GlobalApiResponse<?>> handleJwtInvalid(JwtInvalid ex) {
@@ -105,6 +107,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "JWT_INVALID"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ OAUTH ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 사용할 수 없는 provider */
     @ExceptionHandler(OAuthProviderNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleOAuthProviderNotFound(OAuthProviderNotFound ex) {
@@ -112,6 +115,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "OAUTH_PROVIDER_NOT_FOUND"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 카테고리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 카테고리 부모 404 오류 */
     @ExceptionHandler(CategoryParentNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleCategoryParentNotFound(CategoryParentNotFound ex) {
@@ -126,6 +130,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "CATEGORY_NOT_FOUND"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 아이템 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 아이템 재고 부족 오류 */
     @ExceptionHandler(ItemOutOfStockException.class)
     public ResponseEntity<GlobalApiResponse<?>> handleItemOutOfStockException(ItemOutOfStockException ex) {
@@ -140,6 +145,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "ITEM_NOT_FOUND"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 장바구니 아이템 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 장바구니 아이템 404 오류 */
     @ExceptionHandler(CartItemNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleCartItemNotFound(CartItemNotFound ex) {
@@ -147,6 +153,7 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "CART_ITEM_NOT_FOUND"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 장바구니 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     /** 장바구니 404 오류 */
     @ExceptionHandler(CartNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleCartNotFound(CartNotFound ex) {
@@ -159,5 +166,49 @@ public class GlobalExceptionHandler {
     public ResponseEntity<GlobalApiResponse<?>> handleCartAccessDenied(CartAccessDenied ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "CART_ACCESS_DENIED"));
+    }
+
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 쿠폰 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 쿠폰 404 오류 */
+    @ExceptionHandler(CouponNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponNotFound(CouponNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_NOT_FOUND"));
+    }
+
+    /** 쿠폰 이미 존재 오류 */
+    @ExceptionHandler(CouponAlreadyExists.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponAlreadyExists(CouponAlreadyExists ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_EXISTS"));
+    }
+
+    /** 쿠폰 기한 만료 오류 */
+    @ExceptionHandler(CouponExpired.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponExpired(CouponExpired ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_EXPIRED"));
+    }
+
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 쿠폰 발급 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 발급 쿠폰 이미 사용 오류 */
+    @ExceptionHandler(CouponPublishAlreadyUsed.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishAlreadyUsed(CouponPublishAlreadyUsed ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLIC_ALREADY_USED"));
+    }
+
+    /** 발급 쿠폰 기한 만료 오류 */
+    @ExceptionHandler(CouponPublishExpired.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishExpired(CouponPublishExpired ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLISH_EXPIRED"));
+    }
+
+    /** 발급 쿠폰 기한 만료 오류 */
+    @ExceptionHandler(CouponPublishAlreadyExist.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishAlreadyExist(CouponPublishAlreadyExist ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLISH_EXIST"));
     }
 }
