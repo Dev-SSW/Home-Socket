@@ -16,5 +16,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
 
     /** 해당 생일을 가진 유저 찾기 */
-    List<User> findAllByBirthday(LocalDate today);
+    List<User> findAllByBirth(LocalDate today);
 }

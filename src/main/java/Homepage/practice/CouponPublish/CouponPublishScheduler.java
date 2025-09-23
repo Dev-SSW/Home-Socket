@@ -39,7 +39,7 @@ public class CouponPublishScheduler {
         LocalDate now = LocalDate.now();
 
         // 오늘 생일인 유저 찾기
-        List<User> birthdayUsers = userRepository.findAllByBirthday(now);
+        List<User> birthdayUsers = userRepository.findAllByBirth(now);
 
         // 생일 쿠폰 가져오기 (미리 정의된 정책 쿠폰)
         Coupon birthdayCoupon = couponRepository.findByName("생일쿠폰")

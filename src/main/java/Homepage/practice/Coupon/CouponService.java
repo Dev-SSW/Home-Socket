@@ -21,7 +21,7 @@ public class CouponService {
     /** 쿠폰 만들기 */
     @Transactional
     public CouponResponse createCoupon(CouponRequest request) {
-        if(couponRepository.exsistByName(request.getName())) {
+        if(couponRepository.existsByName(request.getName())) {
             throw new CouponAlreadyExists("이미 존재하는 쿠폰 입니다.");
         }
         Coupon coupon = Coupon.createCoupon(request);

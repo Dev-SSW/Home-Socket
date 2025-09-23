@@ -8,7 +8,7 @@ import java.util.Optional;
 @Repository
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
     /** 쿠폰이 이미 존재하는지 확인 */
-    boolean exsistByName(String name);
+    boolean existsByName(String name);
 
     /** 쿠폰 이름으로 쿠폰 찾기 */
     Optional<Coupon> findByName(String name);
