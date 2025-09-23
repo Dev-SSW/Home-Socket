@@ -28,7 +28,7 @@ public class CouponController {
 
     @GetMapping("/admin/coupon/getAllCoupon")
     @Operation(summary = "모든 쿠폰 조회하기")
-    public ResponseEntity<GlobalApiResponse<List<CouponResponse>>> getAllCoupon(@Valid @RequestBody CouponRequest request) {
+    public ResponseEntity<GlobalApiResponse<List<CouponResponse>>> getAllCoupon() {
         List<CouponResponse> responses = couponService.getAllCoupon();
         return ResponseEntity.ok(GlobalApiResponse.success("모든 쿠폰 조회 성공", responses));
     }
