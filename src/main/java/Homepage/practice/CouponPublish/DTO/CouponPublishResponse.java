@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -20,6 +21,8 @@ public class CouponPublishResponse {
     private LocalDate validStart;        // 쿠폰 사용 가능 기한 (시작)
     private LocalDate validEnd;          // 쿠폰 사용 가능 기한 (만료)
     private CouponPublishStatus status;  // AVAILABLE, USED, EXPIRED
+    private String couponName;           // 쿠폰 명
+    private BigDecimal discount;         // 할인 가격
 
     public static CouponPublishResponse fromEntity(CouponPublish couponPublish) {
         return CouponPublishResponse.builder()
@@ -27,6 +30,8 @@ public class CouponPublishResponse {
                 .validStart(couponPublish.getValidStart())
                 .validEnd(couponPublish.getValidEnd())
                 .status(couponPublish.getStatus())
+                .couponName(couponPublish.getCoupon().getName())
+                .discount(couponPublish.getCoupon().getDiscount())
                 .build();
     }
 }
