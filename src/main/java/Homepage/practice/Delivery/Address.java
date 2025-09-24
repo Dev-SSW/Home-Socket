@@ -1,5 +1,7 @@
 package Homepage.practice.Delivery;
 
+import Homepage.practice.Delivery.DTO.AddressRequest;
+import Homepage.practice.Delivery.DTO.AddressUpdateRequest;
 import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,9 +14,10 @@ import lombok.*;
 public class Address {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name ="Address_id")
     private Long id;
-    private String city;            // 도시명
     private String street;          // 도로명
+    private String detailStreet;    // 상세 주소
     private String zipcode;         // 우편번호
+    private boolean isDefault;      // 기본 배송지 여부
 
     /** 연관관계 */
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
@@ -31,4 +34,27 @@ public class Address {
         this.user = user;
     }
 
+    /** 생성 메서드 */
+    public static Address createAddress(User user, AddressRequest request) {
+        Address address = Address.builder()
+                .street(request.getStreet())
+                .detailStreet(request.getDetailStreet())
+                .zipcode(request.getZipcode())
+                .isDefault(request.isDefault())
+                .build();
+        user.addAddress(address);
+        return address;
+    }
+
+    /** 수정 메서드 */
+    public void updateAddress(AddressUpdateRequest request) {
+        if (request.getStreet() != null) this.street = request.getStreet();
+        if (request.getDetailStreet() != null) this.detailStreet = request.getDetailStreet();
+        if (request.getZipcode() != null) this.zipcode = request.getZipcode();
+    }
+
+    /** 비즈니스 로직 */
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 }

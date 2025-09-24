@@ -205,10 +205,19 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLISH_EXPIRED"));
     }
 
-    /** 발급 쿠폰 기한 만료 오류 */
+    /** 발급 쿠폰 이미 존재 오류 */
     @ExceptionHandler(CouponPublishAlreadyExist.class)
     public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishAlreadyExist(CouponPublishAlreadyExist ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLISH_EXIST"));
     }
+
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 배송/주소 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 주소 404 오류 */
+    @ExceptionHandler(AddressNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleAddressNotFound(AddressNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ADDRESS_NOT_FOUND"));
+    }
+
 }
