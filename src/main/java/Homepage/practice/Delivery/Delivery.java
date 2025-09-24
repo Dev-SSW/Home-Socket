@@ -27,4 +27,19 @@ public class Delivery {
     public void setOrder(Order order) {
         this.order = order;
     }
+
+    /** 생성 메서드 */
+    public static Delivery createDelivery(Order order, Address address) {
+        Delivery delivery = Delivery.builder()
+                .address(address)
+                .status(DeliveryStatus.READY)
+                .build();
+        order.setDelivery(delivery);
+        return delivery;
+    }
+
+    /** 비즈니스 로직 */
+    public void setStatus(DeliveryStatus status) {
+        this.status = status;
+    }
 }

@@ -220,4 +220,11 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "ADDRESS_NOT_FOUND"));
     }
 
+    /** 배송 404 오류 */
+    @ExceptionHandler(DeliveryNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleDeliveryNotFound(DeliveryNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "DELIVERY_NOT_FOUND"));
+    }
+
 }

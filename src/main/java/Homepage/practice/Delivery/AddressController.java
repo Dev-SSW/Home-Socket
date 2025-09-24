@@ -11,10 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,7 +21,7 @@ import java.util.List;
 public class AddressController {
     private final AddressService addressService;
     
-    @GetMapping("/user/address/createAddress")
+    @PostMapping("/user/address/createAddress")
     @Operation(summary = "주소 생성")
     public ResponseEntity<GlobalApiResponse<AddressResponse>> createAddress(@AuthenticationPrincipal User user,
                                                                             @Valid @RequestBody AddressRequest request) {
@@ -46,7 +43,7 @@ public class AddressController {
         return ResponseEntity.ok(GlobalApiResponse.success("특정 주소 조회 성공", response));
     }
 
-    @GetMapping("/user/address/{addressId}/updateAddress")
+    @PutMapping("/user/address/{addressId}/updateAddress")
     @Operation(summary = "주소 업데이트")
     public ResponseEntity<GlobalApiResponse<AddressResponse>> updateAddress(@AuthenticationPrincipal User user,
                                                                             @PathVariable(name = "addressId") Long addressId,
@@ -55,7 +52,7 @@ public class AddressController {
         return ResponseEntity.ok(GlobalApiResponse.success("주소 업데이트 성공", response));
     }
 
-    @GetMapping("/user/address/{addressId}/deleteAddress")
+    @DeleteMapping("/user/address/{addressId}/deleteAddress")
     @Operation(summary = "주소 삭제")
     public ResponseEntity<GlobalApiResponse<AddressResponse>> deleteAddress(@AuthenticationPrincipal User user,
                                                                             @PathVariable(name = "addressId") Long addressId) {
@@ -63,7 +60,7 @@ public class AddressController {
         return ResponseEntity.ok(GlobalApiResponse.success("주소 삭제 성공", null));
     }
 
-    @GetMapping("/user/address/{addressId}/updateDefault")
+    @PutMapping("/user/address/{addressId}/updateDefault")
     @Operation(summary = "기본 배송지 변경")
     public ResponseEntity<GlobalApiResponse<AddressResponse>> updateDefault(@AuthenticationPrincipal User user,
                                                                             @PathVariable(name = "addressId") Long addressId) {
