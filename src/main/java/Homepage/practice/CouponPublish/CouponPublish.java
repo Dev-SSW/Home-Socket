@@ -69,4 +69,10 @@ public class CouponPublish {
         }
         this.status = CouponPublishStatus.USED;
     }
+
+    public void cancelCoupon() {
+        if (this.status == CouponPublishStatus.USED) {
+            this.status = CouponPublishStatus.AVAILABLE;
+        }
+    }
 }

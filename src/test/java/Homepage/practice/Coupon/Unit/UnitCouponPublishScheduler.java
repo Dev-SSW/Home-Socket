@@ -79,7 +79,7 @@ public class UnitCouponPublishScheduler {
     @DisplayName("생일 쿠폰 자동 발급 성공")
     void publishBirthdayCoupons_success() {
         // given
-        given(userRepository.findAllByBirth(any(LocalDate.class))).willReturn(List.of(testUser));
+        given(userRepository.findAllByBirthToday()).willReturn(List.of(testUser));
         given(couponRepository.findByName("생일쿠폰")).willReturn(Optional.of(birthdayCoupon));
         given(couponPublishRepository.existsByUserAndCoupon(testUser, birthdayCoupon)).willReturn(false);
 
@@ -94,7 +94,7 @@ public class UnitCouponPublishScheduler {
     @DisplayName("생일 쿠폰 자동 발급 실패 - 해당 쿠폰 이미 존재")
     void publishBirthdayCoupons_alreadyExists() {
         // given
-        given(userRepository.findAllByBirth(any(LocalDate.class))).willReturn(List.of(testUser));
+        given(userRepository.findAllByBirthToday()).willReturn(List.of(testUser));
         given(couponRepository.findByName("생일쿠폰")).willReturn(Optional.of(birthdayCoupon));
         given(couponPublishRepository.existsByUserAndCoupon(testUser, birthdayCoupon)).willReturn(true);
 
@@ -109,7 +109,7 @@ public class UnitCouponPublishScheduler {
     @DisplayName("생일 쿠폰 자동 발급 실패 - 해당 쿠폰 없음")
     void publishBirthdayCoupons_couponNotFound() {
         // given
-        given(userRepository.findAllByBirth(any(LocalDate.class))).willReturn(List.of(testUser));
+        given(userRepository.findAllByBirthToday()).willReturn(List.of(testUser));
         given(couponRepository.findByName("생일쿠폰")).willReturn(Optional.empty());
 
         // when & then

@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,6 +33,7 @@ public class CartService {
     }
 
     /** 장바구니 조회 */
+    @Transactional
     public CartResponse getCart(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
@@ -57,6 +60,7 @@ public class CartService {
             exit.addQuantity(request.getQuantity());
         } else {            // CartItem이 존재하지 않을 때, 새로운 CartItem 생성
             CartItem cartItem = CartItem.createCartItem(cart, item, request.getQuantity());
+            cartItemRepository.save(cartItem);
         }
         return CartResponse.fromEntity(cart);
     }
@@ -85,6 +89,25 @@ public class CartService {
         }
         Cart cart = cartItem.getCart();
         cartItemRepository.delete(cartItem);
+        return CartResponse.fromEntity(cart);
+    }
+
+    /** 장바구니에서 특정 아이템들만 제거 */
+    @Transactional
+    public CartResponse deleteItems(User user, List<Long> cartItemIds) {
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
+
+        // 소유자 검증 + 삭제
+        cartItemIds.forEach(id -> {
+            CartItem cartItem = cartItemRepository.findById(id)
+                    .orElseThrow(() -> new CartItemNotFound("아이디에 해당하는 장바구니 아이템이 없습니다."));
+            if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
+                throw new CartAccessDenied("본인 장바구니만 수정할 수 있습니다.");
+            }
+            cartItemRepository.delete(cartItem);
+        });
+
         return CartResponse.fromEntity(cart);
     }
 
