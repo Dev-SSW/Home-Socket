@@ -191,6 +191,13 @@ public class GlobalExceptionHandler {
     }
 
     /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 쿠폰 발급 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 발급 쿠폰 404 오류 */
+    @ExceptionHandler(CouponPublishNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishNotFound(CouponPublishNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "COUPON_PUBLISH_NOT_FOUND"));
+    }
+
     /** 발급 쿠폰 이미 사용 오류 */
     @ExceptionHandler(CouponPublishAlreadyUsed.class)
     public ResponseEntity<GlobalApiResponse<?>> handleCouponPublishAlreadyUsed(CouponPublishAlreadyUsed ex) {
@@ -227,4 +234,18 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "DELIVERY_NOT_FOUND"));
     }
 
+    /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 주문 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+    /** 주문 404 오류 */
+    @ExceptionHandler(OrderNotFound.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleOrderNotFound(OrderNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ORDER_NOT_FOUND"));
+    }
+
+    /** 주문 취소 불가 오류 */
+    @ExceptionHandler(OrderNotCancel.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleOrderNotCancel(OrderNotCancel ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ORDER_NOT_CANCEL"));
+    }
 }
