@@ -1,0 +1,298 @@
+package Homepage.practice.Delivery;
+
+import Homepage.practice.Delivery.DTO.AddressRequest;
+import Homepage.practice.Delivery.DTO.AddressResponse;
+import Homepage.practice.Delivery.DTO.AddressUpdateRequest;
+import Homepage.practice.Exception.AddressNotFound;
+import Homepage.practice.Exception.UserNotFound;
+import Homepage.practice.User.User;
+import Homepage.practice.User.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
+@ExtendWith(MockitoExtension.class)
+public class UnitAddress {
+    @Mock
+    private AddressRepository addressRepository;
+    @Mock
+    private UserRepository userRepository;
+    @InjectMocks
+    private AddressService addressService;
+
+    private User testUser;
+    private Address testAddress;
+
+    @BeforeEach
+    void setup() {
+        testUser = User.builder().id(1L).build();
+        AddressRequest request = new AddressRequest("street1", "detailStreet1", "zipcode", true);
+        testAddress = Address.createAddress(testUser, request);
+        ReflectionTestUtils.setField(testAddress, "id", 10L);
+    }
+
+    @Test
+    @DisplayName("주소 생성 성공 - 기본 배송지 존재하는데 true로 들어온 상황")
+    void createAddress_success1() {
+        // given
+        AddressRequest trueAddress = new AddressRequest("street2", "detailStreet2", "zipcode", true);
+        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(testAddress);
+
+        // when
+        AddressResponse response = addressService.createAddress(testUser.getId(), trueAddress);
+
+        // then
+        verify(addressRepository).save(any(Address.class));
+        // 새로운 배송이 true가 되었는지
+        assertThat(response.isDefaultAddress()).isEqualTo(trueAddress.isDefaultAddress());
+        // 기존 배송이 false가 되었는지
+        assertThat(testAddress.isDefaultAddress()).isFalse();
+    }
+
+    @Test
+    @DisplayName("주소 생성 성공 - 기본 배송지 없는데 첫 주소는 아닐 때")
+    void createAddress_success2() {
+        // given
+        AddressRequest falseAddress = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(null);
+        given(addressRepository.countByUser(testUser)).willReturn(1L);
+
+        // when
+        AddressResponse response = addressService.createAddress(testUser.getId(), falseAddress);
+
+        // then
+        verify(addressRepository).save(any(Address.class));
+        // 새로운 배송이 그대로 false인지
+        assertThat(response.isDefaultAddress()).isFalse();
+    }
+
+    @Test
+    @DisplayName("주소 생성 성공 - 기본 배송지 없는데 첫 주소일 때")
+    void createAddress_success3() {
+        // given
+        AddressRequest falseAddress = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(null);
+        given(addressRepository.countByUser(testUser)).willReturn(0L);
+
+        // when
+        AddressResponse response = addressService.createAddress(testUser.getId(), falseAddress);
+
+        // then
+        verify(addressRepository).save(any(Address.class));
+        // 새로운 배송이 첫 주소라서 true 바뀌었는지
+        assertThat(response.isDefaultAddress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("주소 생성 실패 - 아이디에 해당하는 회원이 없습니다")
+    void createAddress_fail() {
+        // given
+        AddressRequest trueAddress = new AddressRequest("street2", "detailStreet2", "zipcode", true);
+        given(userRepository.findById(testUser.getId())).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> addressService.createAddress(testUser.getId(), trueAddress))
+                .isInstanceOf(UserNotFound.class)
+                .hasMessage("아이디에 해당하는 회원이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("유저의 전체 주소 조회 성공")
+    void getAllAddress_success() {
+        // given
+        AddressRequest falseAddress = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, falseAddress);
+        given(addressRepository.findByUserId(testUser.getId())).willReturn(List.of(testAddress, testAddress2));
+
+        // when
+        List<AddressResponse> responses = addressService.getAllAddress(testUser.getId());
+
+        // then
+        assertThat(responses.get(0).getStreet()).isEqualTo("street1");
+        assertThat(responses.get(1).getStreet()).isEqualTo("street2");
+    }
+
+    @Test
+    @DisplayName("유저의 특정 주소 조회 성공")
+    void getAddress_success() {
+        // given
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
+
+        // when
+        AddressResponse response = addressService.getAddress(testAddress.getId());
+
+        // then
+        assertThat(response.getStreet()).isEqualTo("street1");
+    }
+
+    @Test
+    @DisplayName("유저의 특정 주소 조회 실패 - 아이디에 해당하는 주소를 찾을 수 없습니다")
+    void getAddress_fail() {
+        // given
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> addressService.getAddress(testAddress.getId()))
+                .isInstanceOf(AddressNotFound.class)
+                .hasMessage("아이디에 해당하는 주소를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주소 업데이트 성공 - 기본 배송지 존재하는데 true로 들어온 상황")
+    void updateAddress_success1() {
+        // given
+        AddressUpdateRequest updateRequest = new AddressUpdateRequest("street3", "detailStreet3", "zipcode", true);
+        // 수정 할 배송지 미리 만들기
+        AddressRequest createRequest = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, createRequest);
+        ReflectionTestUtils.setField(testAddress2, "id", 100L);
+        given(addressRepository.findById(testAddress2.getId())).willReturn(Optional.of(testAddress2));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(testAddress);
+
+        // when
+        AddressResponse response = addressService.updateAddress(testUser.getId(), testAddress2.getId(), updateRequest);
+
+        // then
+        // 수정 할 배송지가 수정되었고 True인지 확인
+        assertThat(response.getId()).isEqualTo(testAddress2.getId());
+        assertThat(response.getStreet()).isEqualTo("street3");
+        assertThat(response.isDefaultAddress()).isTrue();
+        // 기존 기본 배송지가 false가 되었는지 확인
+        assertThat(testAddress.getStreet()).isEqualTo("street1");
+        assertThat(testAddress.isDefaultAddress()).isFalse();
+    }
+
+    @Test
+    @DisplayName("주소 업데이트 성공 - 수정 할 배송지가 기본 배송지인 경우")
+    void updateAddress_success2() {
+        // given
+        AddressUpdateRequest updateRequest = new AddressUpdateRequest("street3", "detailStreet3", "zipcode", true);
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(testAddress);
+
+        // when
+        AddressResponse response = addressService.updateAddress(testUser.getId(), testAddress.getId(), updateRequest);
+
+        // then
+        // 배송지가 수정되었고 그대로 True인지 확인
+        assertThat(response.getStreet()).isEqualTo("street3");
+        assertThat(response.isDefaultAddress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("주소 업데이트 실패 - 아이디에 해당하는 주소를 찾을 수 없습니다")
+    void updateAddress_fail() {
+        // given
+        AddressUpdateRequest updateRequest = new AddressUpdateRequest("street3", "detailStreet3", "zipcode", true);
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> addressService.updateAddress(testUser.getId(), testAddress.getId(), updateRequest))
+                .isInstanceOf(AddressNotFound.class)
+                .hasMessage("아이디에 해당하는 주소를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("주소 삭제하기 성공 - 삭제하는 배송지가 기본 배송지가 아닐 때")
+    void deleteAddress_success1() {
+        // given
+        AddressRequest createRequest = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, createRequest);
+        ReflectionTestUtils.setField(testAddress2, "id", 100L);
+        given(addressRepository.findById(testAddress2.getId())).willReturn(Optional.of(testAddress2));
+
+        // when
+        addressService.deleteAddress(testUser.getId(), testAddress2.getId());
+
+        // then
+        verify(addressRepository).delete(any(Address.class));
+
+        // 남은 주소가 그대로 있는지 확인
+        assertThat(testAddress.getStreet()).isEqualTo("street1");
+        assertThat(testAddress.isDefaultAddress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("주소 삭제하기 성공 - 삭제하는 배송지가 기본 배송지 일 때")
+    void deleteAddress_success2() {
+        // given
+        AddressRequest createRequest = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, createRequest);
+        ReflectionTestUtils.setField(testAddress2, "id", 100L);
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
+        given(addressRepository.findFirstByUserIdOrderByIdAsc(testUser.getId())).willReturn(testAddress2);
+
+        // when
+        addressService.deleteAddress(testUser.getId(), testAddress.getId());
+
+        // then
+        verify(addressRepository).delete(any(Address.class));
+        // 남은 주소가 True로 바뀌었는지 확인
+        assertThat(testAddress2.getStreet()).isEqualTo("street2");
+        assertThat(testAddress2.isDefaultAddress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("주소 삭제하기 실패 - 아이디에 해당하는 주소를 찾을 수 없습니다")
+    void deleteAddress_fail() {
+        // given
+        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> addressService.deleteAddress(testUser.getId(), testAddress.getId()))
+                .isInstanceOf(AddressNotFound.class)
+                .hasMessage("아이디에 해당하는 주소를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("기본 배송지 변경 성공")
+    void updateDefault_success() {
+        // given
+        AddressRequest createRequest = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, createRequest);
+        ReflectionTestUtils.setField(testAddress2, "id", 100L);
+        given(addressRepository.findById(testAddress2.getId())).willReturn(Optional.of(testAddress2));
+        given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(testAddress);
+
+        // when
+        addressService.updateDefault(testUser.getId(), testAddress2.getId());
+
+        // then
+        // 기존 주소가 false가 되었는지 확인
+        assertThat(testAddress.isDefaultAddress()).isFalse();
+        // 선택 주소가 true가 되었는지 확인
+        assertThat(testAddress2.isDefaultAddress()).isTrue();
+    }
+
+    @Test
+    @DisplayName("기본 배송지 변경 실패 - 아이디에 해당하는 주소를 찾을 수 없습니다")
+    void updateDefault_fail() {
+        // given
+        AddressRequest createRequest = new AddressRequest("street2", "detailStreet2", "zipcode", false);
+        Address testAddress2 = Address.createAddress(testUser, createRequest);
+        ReflectionTestUtils.setField(testAddress2, "id", 100L);
+        given(addressRepository.findById(testAddress2.getId())).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> addressService.updateDefault(testUser.getId(), testAddress2.getId()))
+                .isInstanceOf(AddressNotFound.class)
+                .hasMessage("아이디에 해당하는 주소를 찾을 수 없습니다.");
+    }
+}
