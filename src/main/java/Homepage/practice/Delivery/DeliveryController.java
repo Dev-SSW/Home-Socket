@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class DeliveryController {
     private final DeliveryService deliveryService;
 
-    @PostMapping("/admin/delivery/{deliveryId}/updateDeliveryStatus")
+    @PutMapping("/admin/delivery/{deliveryId}/updateDeliveryStatus")
     @Operation(summary = "배송 상태 변경", description = "배송 상태에는 READY, SHIPPING, COMPLETE, CANCELLED 존재합니다.")
     public ResponseEntity<GlobalApiResponse<?>> updateDeliveryStatus(@PathVariable(name = "deliveryId") Long deliveryId,
                                                                      @Valid @RequestBody DeliveryRequest request) {
