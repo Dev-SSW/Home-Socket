@@ -17,7 +17,7 @@ public class AddressResponse {
     private String street;          // 도로명
     private String detailStreet;    // 상세 주소
     private String zipcode;         // 우편번호
-    private boolean isDefault;      // 기본 배송지 여부
+    private boolean defaultAddress; // 기본 배송지 여부
 
     public static AddressResponse fromEntity(Address address) {
         return AddressResponse.builder()
@@ -25,7 +25,7 @@ public class AddressResponse {
                 .street(address.getStreet())
                 .detailStreet(address.getDetailStreet())
                 .zipcode(address.getZipcode())
-                .isDefault(address.isDefault())
+                .defaultAddress(address.isDefaultAddress())
                 .build();
     }
 }
