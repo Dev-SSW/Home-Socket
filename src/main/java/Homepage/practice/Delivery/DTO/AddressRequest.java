@@ -17,5 +17,5 @@ public class AddressRequest {
     private String detailStreet;    // 상세 주소
     @NotBlank(message = "우편번호를 입력하셔야 합니다.")
     private String zipcode;         // 우편번호
-    private boolean isDefault;      // 기본 배송지 여부
+    private boolean defaultAddress;      // 기본 배송지 여부
 }

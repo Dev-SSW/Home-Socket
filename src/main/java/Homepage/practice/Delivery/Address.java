@@ -17,7 +17,7 @@ public class Address {
     private String street;          // 도로명
     private String detailStreet;    // 상세 주소
     private String zipcode;         // 우편번호
-    private boolean isDefault;      // 기본 배송지 여부
+    private boolean defaultAddress;      // 기본 배송지 여부
 
     /** 연관관계 */
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id")
@@ -40,7 +40,7 @@ public class Address {
                 .street(request.getStreet())
                 .detailStreet(request.getDetailStreet())
                 .zipcode(request.getZipcode())
-                .isDefault(request.isDefault())
+                .defaultAddress(request.isDefaultAddress())
                 .build();
         user.addAddress(address);
         return address;
@@ -54,7 +54,7 @@ public class Address {
     }
 
     /** 비즈니스 로직 */
-    public void setDefault(boolean isDefault) {
-        this.isDefault = isDefault;
+    public void setDefaultAddress(boolean isDefault) {
+        this.defaultAddress = isDefault;
     }
 }

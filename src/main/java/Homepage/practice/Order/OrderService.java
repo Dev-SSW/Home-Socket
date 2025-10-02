@@ -9,6 +9,8 @@ import Homepage.practice.CouponPublish.CouponPublish;
 import Homepage.practice.CouponPublish.CouponPublishRepository;
 import Homepage.practice.Delivery.Address;
 import Homepage.practice.Delivery.AddressRepository;
+import Homepage.practice.Delivery.Delivery;
+import Homepage.practice.Delivery.DeliveryRepository;
 import Homepage.practice.Exception.*;
 import Homepage.practice.Item.Item;
 import Homepage.practice.Item.ItemRepository;
@@ -35,6 +37,7 @@ public class OrderService {
     private final CouponPublishRepository couponPublishRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final DeliveryRepository deliveryRepository;
     private final CartService cartService;
 
     /** 개별 바로 주문 */
@@ -87,6 +90,8 @@ public class OrderService {
         }
 
         Order order = Order.createOrder(user, address, couponPublish, totalPrice);
+        Delivery delivery = Delivery.createDelivery(order, address);
+        deliveryRepository.save(delivery);
         orderItems.forEach(order::addOrderItem);
         orderRepository.save(order);
 
