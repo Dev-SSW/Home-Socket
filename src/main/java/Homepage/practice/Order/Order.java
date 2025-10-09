@@ -63,7 +63,6 @@ public class Order {
                 .orderDate(LocalDate.now())
                 .totalPrice(totalPrice)
                 .build();
-        Delivery.createDelivery(order, address);
         user.addOrder(order);
         if (couponPublish != null) {
             couponPublish.useCoupon();

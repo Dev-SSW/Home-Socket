@@ -27,13 +27,13 @@ public class AddressService {
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
 
         // 유저의 기본 배송지 확인
-        Address currentDefault = addressRepository.findByUserIdAndIsDefaultTrue(userId);
+        Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
 
         // 등록하려는 배송지가 기본 배송지 (true)로 입력된다면
-        if (request.isDefault()) {
+        if (request.isDefaultAddress()) {
             // 기존의 기본 배송지를 해제
             if (currentDefault != null) {
-                currentDefault.setDefault(false);
+                currentDefault.setDefaultAddress(false);
             }
         } else {
             // 기본 배송지가 없는 상황 / 유저의 첫 주소라면 자동으로 기본 배송지 설정
@@ -71,12 +71,12 @@ public class AddressService {
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
 
         // 기본 배송지 로직 반영
-        Address currentDefault = addressRepository.findByUserIdAndIsDefaultTrue(userId);
-        if (request.isDefault()) {
+        Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
+        if (request.isDefaultAddress()) {
             if (currentDefault != null && !currentDefault.getId().equals(addressId)) {
-                currentDefault.setDefault(false);
+                currentDefault.setDefaultAddress(false);
             }
-            address.setDefault(true);
+            address.setDefaultAddress(true);
         }
 
         address.updateAddress(request);
@@ -91,14 +91,14 @@ public class AddressService {
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
 
         // 삭제하는 배송지가 기본 배송지인지 확인하기 위함
-        boolean wasDefault = address.isDefault();
+        boolean wasDefault = address.isDefaultAddress();
         addressRepository.delete(address);
 
         // 만약 기본 배송지를 삭제했다면, 다른 주소 하나를 기본 배송지로 설정
         if (wasDefault) {
             Address firstAddress = addressRepository.findFirstByUserIdOrderByIdAsc(userId);
             if (firstAddress != null) {
-                firstAddress.setDefault(true);
+                firstAddress.setDefaultAddress(true);
             }
         }
     }
@@ -107,15 +107,15 @@ public class AddressService {
     @Transactional
     public void updateDefault(Long userId, Long addressId) {
         Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new AddressNotFound("해당 주소가 존재하지 않습니다."));
+                .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
 
         // 기존 기본 배송지 해제
-        Address currentDefault = addressRepository.findByUserIdAndIsDefaultTrue(userId);
+        Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
         if (currentDefault != null) {
-            currentDefault.setDefault(false);
+            currentDefault.setDefaultAddress(false);
         }
 
         // 선택된 주소를 기본 배송지로 지정
-        address.setDefault(true);
+        address.setDefaultAddress(true);
     }
 }
