@@ -7,7 +7,7 @@ import Homepage.practice.CouponPublish.CouponPublishRepository;
 import Homepage.practice.Delivery.DTO.DeliveryRequest;
 import Homepage.practice.Order.Order;
 import Homepage.practice.Order.OrderRepository;
-import Homepage.practice.TestInit;
+import Homepage.practice.TestIntegrationInit;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,12 +58,12 @@ public class IntegrationDelivery {
 
     @BeforeEach
     void setup() {
-        User user = TestInit.createUser(userRepository);
-        Coupon coupon = TestInit.createCoupon(couponRepository);
-        CouponPublish couponPublish = TestInit.createCouponPublish(couponPublishRepository, coupon, user);
-        Address address = TestInit.createAddress(addressRepository, user);
-        Order order = TestInit.createOrder(orderRepository, user, address, couponPublish, new BigDecimal("2000"));
-        testDelivery = TestInit.createDelivery(deliveryRepository, order, address);
+        User user = TestIntegrationInit.createUser(userRepository);
+        Coupon coupon = TestIntegrationInit.createCoupon(couponRepository);
+        CouponPublish couponPublish = TestIntegrationInit.createCouponPublish(couponPublishRepository, coupon, user);
+        Address address = TestIntegrationInit.createAddress(addressRepository, user);
+        Order order = TestIntegrationInit.createOrder(orderRepository, user, couponPublish, new BigDecimal("2000"));
+        testDelivery = TestIntegrationInit.createDelivery(deliveryRepository, order, address);
     }
 
     @Test

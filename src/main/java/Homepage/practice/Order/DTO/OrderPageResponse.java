@@ -1,10 +1,9 @@
 package Homepage.practice.Order.DTO;
 
+import Homepage.practice.CartItem.DTO.CartItemResponse;
 import Homepage.practice.CouponPublish.CouponPublishStatus;
 import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
 import Homepage.practice.Delivery.DTO.AddressResponse;
-import Homepage.practice.OrderItem.DTO.OrderItemResponse;
-import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -24,10 +23,9 @@ import java.util.stream.Collectors;
 public class OrderPageResponse {
     private List<AddressResponse> addressResponses;
     private List<CouponPublishResponse> couponPublishResponses;
-    private List<OrderItemResponse> orderItemResponses;
-    private BigDecimal totalPrice;
+    private List<CartItemResponse> cartItemResponses;
 
-    public static OrderPageResponse of(User user, List<OrderItem> orderItems, BigDecimal totalPrice) {
+    public static OrderPageResponse of(User user) {
         return OrderPageResponse.builder()
                 .addressResponses(user.getAddresses().stream()
                         .map(AddressResponse::fromEntity)
@@ -36,10 +34,9 @@ public class OrderPageResponse {
                         .filter(c -> c.getStatus() == CouponPublishStatus.AVAILABLE)
                         .map(CouponPublishResponse::fromEntity)
                         .collect(Collectors.toList()))
-                .orderItemResponses(orderItems.stream()
-                        .map(OrderItemResponse::fromEntity)
+                .cartItemResponses(user.getCart().getCartItems().stream()
+                        .map(CartItemResponse::fromEntity)
                         .collect(Collectors.toList()))
-                .totalPrice(totalPrice)
                 .build();
     }
 }

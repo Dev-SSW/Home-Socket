@@ -1,7 +1,6 @@
 package Homepage.practice.Order;
 
 import Homepage.practice.CouponPublish.CouponPublish;
-import Homepage.practice.Delivery.Address;
 import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.Delivery.DeliveryStatus;
 import Homepage.practice.Exception.OrderNotCancel;
@@ -57,7 +56,7 @@ public class Order {
     }
 
     /** 생성 메서드 */
-    public static Order createOrder(User user, Address address, CouponPublish couponPublish, BigDecimal totalPrice) {
+    public static Order createOrder(User user, CouponPublish couponPublish, BigDecimal totalPrice) {
         Order order = Order.builder()
                 .couponPublish(couponPublish)
                 .orderDate(LocalDate.now())
