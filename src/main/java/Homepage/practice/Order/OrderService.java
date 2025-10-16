@@ -89,7 +89,7 @@ public class OrderService {
             totalPrice = totalPrice.subtract(couponPublish.getCoupon().getDiscount());
         }
 
-        Order order = Order.createOrder(user, address, couponPublish, totalPrice);
+        Order order = Order.createOrder(user, couponPublish, totalPrice);
         Delivery delivery = Delivery.createDelivery(order, address);
         deliveryRepository.save(delivery);
         orderItems.forEach(order::addOrderItem);
@@ -126,19 +126,6 @@ public class OrderService {
     public OrderPageResponse getOrderPage(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
-        List<OrderItem> orderItems = cart.getCartItems().stream()
-                .map(cartItem -> {
-                    // cartItem을 순회하며 OrderItem 만들기
-                    Item item = cartItem.getItem();
-                    return OrderItem.createOrderItem(item, cartItem.getQuantity());
-                })
-                .collect(Collectors.toList());
-        // 총 합계 구하기
-        BigDecimal totalPrice = BigDecimal.valueOf(orderItems.stream()
-                .mapToDouble(OrderItem::getTotalPrice)
-                .sum());
-        return OrderPageResponse.of(user, orderItems, totalPrice);
+        return OrderPageResponse.of(user);
     }
 }

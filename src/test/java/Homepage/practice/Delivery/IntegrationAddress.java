@@ -2,7 +2,7 @@ package Homepage.practice.Delivery;
 
 import Homepage.practice.Delivery.DTO.AddressRequest;
 import Homepage.practice.Delivery.DTO.AddressUpdateRequest;
-import Homepage.practice.TestInit;
+import Homepage.practice.TestIntegrationInit;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,7 @@ public class IntegrationAddress {
 
     @BeforeEach
     void setup() {
-        testUser = TestInit.createUser(userRepository);
+        testUser = TestIntegrationInit.createUser(userRepository);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class IntegrationAddress {
     void createAddress_success1() throws Exception {
         // given
         // 기본 배송지 저장
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
         // 새로운 true 주소
         AddressRequest request = new AddressRequest("street2", "detailStreet2", "zipcode", true);
 
@@ -120,7 +120,7 @@ public class IntegrationAddress {
     @DisplayName("유저의 전체 주소 조회 성공")
     void getAllAddress_success() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
 
         // when & then
         mockMvc.perform(get("/user/address/getAllAddress")
@@ -135,7 +135,7 @@ public class IntegrationAddress {
     @DisplayName("유저의 특정 주소 조회 성공")
     void getAddress_success() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
 
         // when & then
         mockMvc.perform(get("/user/address/{addressId}/getAddress", testAddress.getId())
@@ -163,7 +163,7 @@ public class IntegrationAddress {
     @DisplayName("주소 업데이트 성공 - 기본 배송지 존재하는데 true로 들어온 상황")
     void updateAddress_success1() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
         // 새로운 주소 하나 더 넣어두기
         AddressRequest request = new AddressRequest("street2", "detailStreet2", "zipcode", false);
         Address address2 = Address.createAddress(testUser, request);
@@ -191,7 +191,7 @@ public class IntegrationAddress {
     @DisplayName("주소 업데이트 성공 - 수정 할 배송지가 기본 배송지인 경우")
     void updateAddress_success2() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
 
         // 수정 입력값이 true
         AddressUpdateRequest updateRequest = new AddressUpdateRequest("street3", "detailStreet3", "zipcode", true);
@@ -228,7 +228,7 @@ public class IntegrationAddress {
     @DisplayName("주소 삭제하기 성공 - 삭제하는 배송지가 기본 배송지가 아닐 때")
     void deleteAddress_success1() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
         // 새로운 주소 하나 더 넣어두기
         AddressRequest request = new AddressRequest("street2", "detailStreet2", "zipcode", false);
         Address address2 = Address.createAddress(testUser, request);
@@ -250,7 +250,7 @@ public class IntegrationAddress {
     @DisplayName("주소 삭제하기 성공 - 삭제하는 배송지가 기본 배송지 일 때")
     void deleteAddress_success2() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
         // 새로운 주소 하나 더 넣어두기
         AddressRequest request = new AddressRequest("street2", "detailStreet2", "zipcode", false);
         Address address2 = Address.createAddress(testUser, request);
@@ -286,7 +286,7 @@ public class IntegrationAddress {
     @DisplayName("기본 배송지 변경하기 성공")
     void updateDefault_success() throws Exception {
         // given
-        testAddress = TestInit.createAddress(addressRepository, testUser);
+        testAddress = TestIntegrationInit.createAddress(addressRepository, testUser);
         // 새로운 주소 하나 더 넣어두기
         AddressRequest request = new AddressRequest("street2", "detailStreet2", "zipcode", false);
         Address address2 = Address.createAddress(testUser, request);

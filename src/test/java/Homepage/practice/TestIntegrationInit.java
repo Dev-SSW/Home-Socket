@@ -31,29 +31,30 @@ import Homepage.practice.User.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class TestInit {
+public class TestIntegrationInit {
+    private TestIntegrationInit() {}
+
     public static User createUser(UserRepository userRepository) {
-        SignupRequest request = new SignupRequest("user1", "pass1", LocalDate.of(2000, 1, 1), "홍길동");
-        String encodedPassword = "{noop}pass1";
-        User user = User.createUser(request, encodedPassword);
+        User user = User.createUser(
+                new SignupRequest("user1", "pass1", LocalDate.of(2000, 1, 1), "홍길동"), "{noop}pass1");
         return userRepository.save(user);
     }
 
     public static Category createCategory(CategoryRepository categoryRepository) {
-        CategoryRequest request = new CategoryRequest("category1", 0, 1, null);
-        Category category = Category.createCategory(request, null);
+        Category category = Category.createCategory(
+                new CategoryRequest("category1", 0, 1, null), null);
         return categoryRepository.save(category);
     }
 
     public static Item createItem(ItemRepository itemRepository, Category category) {
-        ItemRequest request = new ItemRequest("item1", 1000, 10000);
-        Item item = Item.createItem(category, request);
+        Item item = Item.createItem(
+                category, new ItemRequest("item1", 1000, 10000));
         return itemRepository.save(item);
     }
 
     public static Coupon createCoupon(CouponRepository couponRepository) {
-        CouponRequest request = new CouponRequest("coupon1", BigDecimal.valueOf(500), LocalDate.of(2000,1,1), LocalDate.of(2100,1,1), 30);
-        Coupon coupon = Coupon.createCoupon(request);
+        Coupon coupon = Coupon.createCoupon(
+                new CouponRequest("coupon1", BigDecimal.valueOf(1000), LocalDate.of(2000,1,1), LocalDate.of(2100,1,1), 90));
         return couponRepository.save(coupon);
     }
 
@@ -73,8 +74,8 @@ public class TestInit {
     }
 
     public static Address createAddress(AddressRepository addressRepository, User user) {
-        AddressRequest request = new AddressRequest("street1", "detailStreet1", "zipcode", true);
-        Address address = Address.createAddress(user, request);
+        Address address = Address.createAddress(
+                user, new AddressRequest("address1", "detailStreet1", "zipcode", true));
         return addressRepository.save(address);
     }
 
@@ -83,8 +84,8 @@ public class TestInit {
         return deliveryRepository.save(delivery);
     }
 
-    public static Order createOrder(OrderRepository orderRepository, User user, Address address, CouponPublish couponPublish, BigDecimal totalPrice) {
-        Order order = Order.createOrder(user, address, couponPublish, totalPrice);
+    public static Order createOrder(OrderRepository orderRepository, User user, CouponPublish couponPublish, BigDecimal totalPrice) {
+        Order order = Order.createOrder(user, couponPublish, totalPrice);
         return orderRepository.save(order);
     }
 
