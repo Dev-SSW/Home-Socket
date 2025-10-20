@@ -1,6 +1,7 @@
 package Homepage.practice.Cart;
 
 import Homepage.practice.Cart.DTO.CartResponse;
+import Homepage.practice.CartItem.DTO.CartItemListRequest;
 import Homepage.practice.CartItem.DTO.CartItemRequest;
 import Homepage.practice.CartItem.DTO.CartItemUpdateRequest;
 import Homepage.practice.Exception.GlobalApiResponse;
@@ -48,6 +49,14 @@ public class CartController {
                                                                       @PathVariable(name = "cartItemId") Long cartItemId) {
         CartResponse response = cartService.deleteItem(user, cartItemId);
         return ResponseEntity.ok(GlobalApiResponse.success("장바구니 안 아이템 삭제하기 성공", response));
+    }
+
+    @DeleteMapping("/user/cart/deleteItems")
+    @Operation(summary = "장바구니 안 아이템 삭제하기")
+    public ResponseEntity<GlobalApiResponse<CartResponse>> deleteItems(@AuthenticationPrincipal User user,
+                                                                       @Valid @RequestBody CartItemListRequest request) {
+        CartResponse response = cartService.deleteItems(user, request.getCartItemIds());
+        return ResponseEntity.ok(GlobalApiResponse.success("장바구니에서 특정 아이템들만 제거 성공", response));
     }
 
     @DeleteMapping("/user/cart/clearCart")
