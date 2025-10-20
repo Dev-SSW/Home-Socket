@@ -1,22 +1,20 @@
-package Homepage.practice.User.Unit;
+package Homepage.practice.User;
 
+import Homepage.practice.TestUnitInit;
 import Homepage.practice.User.JWT.JwtUtils;
-import Homepage.practice.User.Role;
-import Homepage.practice.User.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import java.time.LocalDate;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class UnitJwtUtils {
-    // 테스트 필드
-    private JwtUtils jwtUtils; // 의존성이 없는 순수 유틸 클래스이므로 실제 객체를 생성하여 테스트
+    // 의존성이 없는 순수 유틸 클래스이므로 실제 객체를 생성하여 테스트
+    private JwtUtils jwtUtils;
     private User testUser;
 
     @BeforeEach
@@ -24,15 +22,7 @@ public class UnitJwtUtils {
         jwtUtils = new JwtUtils();
         ReflectionTestUtils.setField(jwtUtils, "secretKey", "testSecretKey12345678testSecretKey123456789testSecretKey123456789");
         jwtUtils.init();
-        testUser = User.builder()
-                .id(1L)
-                .username("user1")
-                .password("pass1")
-                .birth(LocalDate.of(2000,1,1))
-                .name("홍길동")
-                .role(Role.ROLE_USER)
-                .tokenVersion(1)
-                .build();
+        testUser = TestUnitInit.createUser(1L);
     }
 
     @Test

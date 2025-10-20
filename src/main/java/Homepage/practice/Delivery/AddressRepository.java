@@ -21,5 +21,6 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     List<Address> findByUserId(Long userId);
 
     /** 유저의 주소 중 첫번째 주소를 조회 */
-    Address findFirstByUserIdOrderByIdAsc(Long userId);
+    @Query("select a from Address a where a.user.id = :userId order by a.id ASC")
+    Address findFirstByUserIdOrderByIdAsc(@Param("userId") Long userId);
 }

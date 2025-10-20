@@ -38,26 +38,16 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class UnitOrder {
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private AddressRepository addressRepository;
-    @Mock
-    private ItemRepository itemRepository;
-    @Mock
-    private CouponPublishRepository couponPublishRepository;
-    @Mock
-    private CartRepository cartRepository;
-    @Mock
-    private CartService cartService;
-    @Mock
-    private CartItemRepository cartItemRepository;
-    @Mock
-    private OrderRepository orderRepository;
-    @Mock
-    private DeliveryRepository deliveryRepository;
-    @InjectMocks
-    private OrderService orderService;
+    @Mock private UserRepository userRepository;
+    @Mock private AddressRepository addressRepository;
+    @Mock private ItemRepository itemRepository;
+    @Mock private CouponPublishRepository couponPublishRepository;
+    @Mock private CartRepository cartRepository;
+    @Mock private CartService cartService;
+    @Mock private CartItemRepository cartItemRepository;
+    @Mock private OrderRepository orderRepository;
+    @Mock private DeliveryRepository deliveryRepository;
+    @InjectMocks private OrderService orderService;
 
     private User testUser;
     private Address testAddress;
@@ -67,7 +57,6 @@ public class UnitOrder {
     private CouponPublish testCouponPublish;
     private Cart testCart;
     private CartItem testCartItem;
-
 
     @BeforeEach
     void setup() {

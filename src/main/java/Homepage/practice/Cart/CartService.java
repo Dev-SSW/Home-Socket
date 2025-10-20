@@ -25,19 +25,13 @@ public class CartService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    /** 장바구니 있으면 조회, 없으면 생성 */
-    @Transactional
-    public Cart getOrCreateCart(User user) {
-        return cartRepository.findByUser(user)
-                .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
-    }
-
     /** 장바구니 조회 */
     @Transactional
     public CartResponse getCart(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        Cart cart = getOrCreateCart(user);
+        Cart cart = cartRepository.findByUser(user)
+                .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
         return CartResponse.fromEntity(cart);
     }
 
@@ -46,7 +40,8 @@ public class CartService {
     public CartResponse addItem(String username, CartItemRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        Cart cart = getOrCreateCart(user);
+        Cart cart = cartRepository.findByUser(user)
+                .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
 

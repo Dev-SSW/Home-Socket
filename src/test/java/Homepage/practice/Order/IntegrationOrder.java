@@ -46,35 +46,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class IntegrationOrder {
-    // 테스트 인프라
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private CouponRepository couponRepository;
-    @Autowired
-    private CouponPublishRepository couponPublishRepository;
-    @Autowired
-    private CartRepository cartRepository;
-    @Autowired
-    private CartItemRepository cartItemRepository;
-    @Autowired
-    private DeliveryRepository deliveryRepository;
-    @Autowired
-    private CartService cartService;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private OrderItemRepository orderItemRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private AddressRepository addressRepository;
+    @Autowired private ItemRepository itemRepository;
+    @Autowired private CouponRepository couponRepository;
+    @Autowired private CouponPublishRepository couponPublishRepository;
+    @Autowired private CartRepository cartRepository;
+    @Autowired private CartItemRepository cartItemRepository;
+    @Autowired private DeliveryRepository deliveryRepository;
+    @Autowired private CartService cartService;
 
     private User testUser;
     private Address testAddress;

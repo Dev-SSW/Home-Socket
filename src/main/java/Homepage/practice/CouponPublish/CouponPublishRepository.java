@@ -17,7 +17,8 @@ public interface CouponPublishRepository extends JpaRepository<CouponPublish, Lo
     List<CouponPublish> findAllByStatusAndValidEndBefore(@Param("status") CouponPublishStatus status, @Param("date") LocalDate date);
 
     /** 이미 발급된 쿠폰인지 확인 */
-    boolean existsByUserAndCoupon(User user, Coupon coupon);
+    @Query("select case when count(cp) > 0 then true else false end from CouponPublish cp where cp.user = :user and cp.coupon = :coupon")
+    boolean existsByUserAndCoupon(@Param("user") User user, @Param("coupon") Coupon coupon);
 
     /** 유저로 쿠폰 찾기 */
     List<CouponPublish> findByUser(User user);
