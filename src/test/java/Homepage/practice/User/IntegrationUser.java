@@ -1,9 +1,7 @@
-package Homepage.practice.User.Integration;
+package Homepage.practice.User;
 
 import Homepage.practice.User.DTO.*;
 import Homepage.practice.User.JWT.JwtUtils;
-import Homepage.practice.User.User;
-import Homepage.practice.User.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,28 +24,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc  // MockMvc 빈 자동 구성
-@Transactional
-@Rollback
+@AutoConfigureMockMvc
 public class IntegrationUser {
-    // 테스트 인프라
-    @Autowired
-    private MockMvc mockMvc;            // @AutoConfigureMockMvc로 자동 주입
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private JwtUtils jwtUtils;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
-    // 테스트 시 사용
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // 테스트 필드
     private SignupRequest signupRequest;
     private LoginRequest loginRequest;
     private UserUpdateRequest userUpdateRequest;
@@ -63,6 +48,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("회원가입 성공")
     void signup_success() throws Exception {
         mockMvc.perform(post("/public/signup")
@@ -74,6 +60,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("회원가입 실패 - 아이디 중복")
     void signup_fail() throws Exception {
         // DB에 미리 사용자 저장
@@ -90,6 +77,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("로그인 성공")
     void login_success() throws Exception {
         // 회원가입
@@ -108,6 +96,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("로그인 실패 - 존재하지 않는 유저")
     void login_fail() throws Exception {
         // DB에 미리 저장하지 않았음
@@ -121,6 +110,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("로그인 실패 - 잘못된 비밀번호")
     void login_wrong() throws Exception {
         // 회원가입
@@ -138,6 +128,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 재발급 성공")
     void tokenRenew_success() throws Exception {
         // 회원가입
@@ -158,6 +149,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 재발급 실패 - 변조된 리프레시 토큰")
     void tokenRenew_fail1() throws Exception {
         // 회원가입
@@ -178,6 +170,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 재발급 실패 - 리프레시 토큰 만료")
     void tokenRenew_fail2() throws Exception {
         // 회원가입
@@ -196,6 +189,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 유효성 검사 성공")
     void validateToken_success() throws Exception {
         // 회원가입
@@ -213,6 +207,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 유효성 검사 실패 - 변조된 토큰")
     void validateToken_fail1() throws Exception {
         // 회원가입
@@ -233,6 +228,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 유효성 검사 실패 - 토큰 만료")
     void validateToken_fail2() throws Exception {
         // 회원가입
@@ -251,6 +247,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("전체 유저 정보 가져오기 성공")
     @WithMockUser(username = "admin", roles = "ADMIN")
     void getAllUser_success() throws Exception {
@@ -268,6 +265,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("특정 유저 정보 가져오기 성공")
     void getUser_success() throws Exception {
         // 회원가입
@@ -282,6 +280,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 정보 수정하기 성공 (비밀번호 제외)")
     void updateUser_success() throws Exception {
         // 회원가입
@@ -299,6 +298,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("비밀번호 수정하기 성공")
     void updatePassword_success() throws Exception {
         // 회원가입
@@ -315,6 +315,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("비밀번호 수정하기 실패 - 비밀번호 오류")
     void updatePassword_fail() throws Exception {
         // 회원가입
@@ -333,6 +334,7 @@ public class IntegrationUser {
     }
 
     @Test
+    @Transactional
     @DisplayName("회원 탈퇴하기 성공 - 통합")
     void deleteUser_success() throws Exception {
         // 회원가입

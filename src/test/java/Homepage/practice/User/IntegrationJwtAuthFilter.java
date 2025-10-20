@@ -1,9 +1,8 @@
-package Homepage.practice.User.Integration;
+package Homepage.practice.User;
 
+import Homepage.practice.TestIntegrationInit;
 import Homepage.practice.User.DTO.SignupRequest;
 import Homepage.practice.User.JWT.JwtUtils;
-import Homepage.practice.User.User;
-import Homepage.practice.User.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,25 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc  // MockMvc 빈 자동 구성
-@Transactional
-@Rollback
+@AutoConfigureMockMvc
 public class IntegrationJwtAuthFilter {
-    // 테스트 인프라
-    @Autowired
-    private MockMvc mockMvc;                // @AutoConfigureMockMvc로 자동 주입
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private JwtUtils jwtUtils;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
-    // 테스트 시 사용
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // 테스트 필드
     private SignupRequest signupRequest;
 
     @BeforeEach
@@ -55,6 +42,7 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 없이 접근 → 401 (AuthenticationEntryPoint)")
     void unauthorized_Access401() throws Exception {
         mockMvc.perform(get("/user/getUser"))
@@ -65,13 +53,13 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 접근 -> 권한 부족 → 403 (AccessDeniedHandler)")
     void forbidden_Access403() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
-        userRepository.save(newUser);
+        User testUser = TestIntegrationInit.createUser(userRepository);
         // 토큰 발급
-        String jwt = jwtUtils.generateToken(newUser, newUser.getTokenVersion());
+        String jwt = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
 
         mockMvc.perform(get("/admin/getAllUser")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -83,13 +71,13 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 접근 -> 존재하지 않는 url 요청 -> 404 (GlobalExceptionHandler - NoHandlerFoundException)")
     void notFound_Access404() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
-        userRepository.save(newUser);
+        User testUser = TestIntegrationInit.createUser(userRepository);
         // 토큰 발급
-        String jwt = jwtUtils.generateToken(newUser, newUser.getTokenVersion());
+        String jwt = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
 
         mockMvc.perform(get("/user/NotFoundUrl")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -101,13 +89,13 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 만료 (JwtAuthFilter)")
     void tokenExpired() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
-        userRepository.save(newUser);
+        User testUser = TestIntegrationInit.createUser(userRepository);
         // 토큰 발급
-        String jwt = jwtUtils.generateExpiredToken(new HashMap<>(), newUser, newUser.getTokenVersion());
+        String jwt = jwtUtils.generateExpiredToken(new HashMap<>(), testUser, testUser.getTokenVersion());
 
         mockMvc.perform(get("/user/getUser")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
@@ -119,13 +107,13 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("유효하지 않은 토큰 (JwtAuthFilter)")
     void tokenValid_fail() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
-        userRepository.save(newUser);
+        User testUser = TestIntegrationInit.createUser(userRepository);
         // 토큰 발급
-        String token = jwtUtils.generateToken(newUser, newUser.getTokenVersion());
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         String invaildToken = token.substring(0, token.length()-2) + "AB";
 
         mockMvc.perform(get("/user/getUser")
@@ -138,15 +126,15 @@ public class IntegrationJwtAuthFilter {
     }
 
     @Test
+    @Transactional
     @DisplayName("토큰 버전 불일치 (JwtAuthFilter)")
     void tokenVersion_not_match() throws Exception {
         // 회원가입
-        User newUser = User.createUser(signupRequest, passwordEncoder.encode(signupRequest.getPassword()));
-        userRepository.save(newUser);
+        User testUser = TestIntegrationInit.createUser(userRepository);
         // 토큰 발급
-        String token = jwtUtils.generateToken(newUser, newUser.getTokenVersion());
+        String token = jwtUtils.generateToken(testUser, testUser.getTokenVersion());
         // 토큰 버전 올리기
-        newUser.incrementTokenVersion();
+        testUser.incrementTokenVersion();
 
         mockMvc.perform(get("/user/getUser")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)

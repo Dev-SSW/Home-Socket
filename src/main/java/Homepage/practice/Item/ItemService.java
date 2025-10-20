@@ -27,8 +27,8 @@ public class ItemService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다."));
         Item item = Item.createItem(category, request);
-        Item save = itemRepository.save(item);
-        return ItemResponse.fromEntity(save);
+        itemRepository.save(item);
+        return ItemResponse.fromEntity(item);
     }
 
     /** 전체 상품 조회 */

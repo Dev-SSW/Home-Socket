@@ -26,8 +26,8 @@ public class CategoryService {
                     .orElseThrow(() -> new CategoryParentNotFound("아이디에 해당하는 부모가 없습니다."));
         }
         Category category = Category.createCategory(request, parent);
-        Category save = categoryRepository.save(category);
-        return CategoryResponse.fromEntity(save);
+        categoryRepository.save(category);
+        return CategoryResponse.fromEntity(category);
     }
 
     /** 전체 카테고리 정보 가져오기 */
