@@ -1,6 +1,8 @@
 package Homepage.practice.Review;
 
 import Homepage.practice.Item.Item;
+import Homepage.practice.Review.DTO.ReviewRequest;
+import Homepage.practice.Review.DTO.ReviewUpdateRequest;
 import Homepage.practice.User.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,4 +33,33 @@ public class Review {
     public void setUser(User user) { this.user = user; }
 
     public void setItem(Item item) { this.item = item; }
+
+    /** 생성 메서드 */
+    public static Review createReview(User user, Item item, ReviewRequest request, int reviewCount) {
+        Review review = Review.builder()
+                .title(request.getTitle())
+                .comment(request.getComment())
+                .star(request.getStar())
+                .reviewDate(LocalDate.now())
+                .build();
+        item.updateAvgStar(request.getStar(), reviewCount);
+        item.addReview(review);
+        user.addReview(review);
+        return  review;
+    }
+
+    /** 수정 메서드 */
+    public Review updateReview(ReviewUpdateRequest request, int reviewCount) {
+        if (request.getTitle() != null) {
+            this.title = request.getTitle();
+        }
+        if (request.getComment() != null) {
+            this.comment = request.getComment();
+        }
+        if (request.getStar() != null) {
+            this.star = request.getStar();
+            item.updateAvgStar(request.getStar(), reviewCount);
+        }
+        return this;
+    }
 }
