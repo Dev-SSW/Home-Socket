@@ -5,6 +5,8 @@ import Homepage.practice.User.DTO.UserPassUpdateRequest;
 import Homepage.practice.User.DTO.UserResponse;
 import Homepage.practice.User.DTO.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,11 +32,11 @@ public class UserService implements UserDetailsService {
     }
 
     /** 전체 유저 정보 가져오기 */
-    public List<UserResponse> getAllUser() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+    public Page<UserResponse> getAllUser(Pageable pageable) {
+        return userRepository.findUserPage(pageable);
+        /**
+         * return userRepository.findAll(pageable).map(UserResponse::fromEntity);
+         */
     }
 
     /** 특정 유저 정보 가져오기 */

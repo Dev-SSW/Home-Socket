@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -49,9 +51,9 @@ public class AuthController {
 
     @GetMapping("/admin/getAllUser")
     @Operation(summary = "전체 유저 정보 가져오기")
-    public ResponseEntity<GlobalApiResponse<List<UserResponse>>> getAllUser() {
-        List<UserResponse> listUserResponse = userService.getAllUser();
-        return ResponseEntity.ok(GlobalApiResponse.success("전체 정보 조회 성공", listUserResponse));
+    public ResponseEntity<GlobalApiResponse<Page<UserResponse>>> getAllUser(Pageable pageable) {
+        Page<UserResponse> userResponses = userService.getAllUser(pageable);
+        return ResponseEntity.ok(GlobalApiResponse.success("전체 정보 조회 성공", userResponses));
     }
 
     @GetMapping("/user/getUser")

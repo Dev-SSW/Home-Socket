@@ -70,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String username = jwtUtils.extractUsername(jwtToken);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userService.loadUserByUsername(username);
+                User userDetails = (User) userService.loadUserByUsername(username);
 
                 if (jwtUtils.isTokenExpired(jwtToken)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
@@ -86,9 +86,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 // 토큰 버전 체크 추가
                 Integer versionToken = jwtUtils.extractTokenVersion(jwtToken);
-                User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));;
-                Integer versionDB = user.getTokenVersion();
+                Integer versionDB = userDetails.getTokenVersion();
                 if (!versionToken.equals(versionDB)) {
                     write(response, HttpServletResponse.SC_UNAUTHORIZED,
                             GlobalApiResponse.fail("토큰이 더 이상 유효하지 않습니다. 다시 로그인해주세요.", "JWT_INVALID"));
