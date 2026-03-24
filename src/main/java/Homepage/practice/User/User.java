@@ -50,7 +50,7 @@ public class User implements UserDetails, OAuth2User {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
     private Cart cart;
 
     /** 연관관계 편의 메서드 */

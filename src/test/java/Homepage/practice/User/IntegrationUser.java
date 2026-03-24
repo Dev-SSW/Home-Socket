@@ -256,12 +256,15 @@ public class IntegrationUser {
         userRepository.save(newUser);
 
         // 기존 실행 시 admin 계정을 추가해뒀음
-        mockMvc.perform(get("/admin/getAllUser"))
+        mockMvc.perform(get("/admin/getAllUser")
+                        .param("page", "0")
+                        .param("size", "2")
+                        .param("sort", "id,desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("전체 정보 조회 성공"))
-                .andExpect(jsonPath("$.data[0].username").value("admin"))
-                .andExpect(jsonPath("$.data[1].username").value("user1"));
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.totalElements").value(2));
     }
 
     @Test
