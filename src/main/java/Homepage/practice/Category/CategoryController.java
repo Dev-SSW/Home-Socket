@@ -1,5 +1,6 @@
 package Homepage.practice.Category;
 
+import Homepage.practice.Category.DTO.CategoryHierarchyResponse;
 import Homepage.practice.Category.DTO.CategoryRequest;
 import Homepage.practice.Category.DTO.CategoryResponse;
 import Homepage.practice.Category.DTO.CategoryUpdateRequest;
@@ -25,7 +26,7 @@ public class CategoryController {
         CategoryResponse response = categoryService.createCategory(request);
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리 생성 성공", response));
     }
-
+/*
     @GetMapping("/public/category/getAllCategory")
     @Operation(summary = "전체 카테고리 가져오기")
     public ResponseEntity<GlobalApiResponse<List<CategoryResponse>>> getAllCategory() {
@@ -38,6 +39,21 @@ public class CategoryController {
     public ResponseEntity<GlobalApiResponse<CategoryResponse>> getCategory(@PathVariable(name = "categoryId") Long categoryId) {
         CategoryResponse response = categoryService.getCategory(categoryId);
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리 가져오기 성공", response));
+    }
+*/
+
+    @GetMapping("/public/category/getRootCategory")
+    @Operation(summary = "루트 카테고리 가져오기 (계층별)")
+    public ResponseEntity<GlobalApiResponse<List<CategoryHierarchyResponse>>> getRootCategory() {
+        List<CategoryHierarchyResponse> responses = categoryService.getRootCategory();
+        return ResponseEntity.ok(GlobalApiResponse.success("루트 카테고리 가져오기 성공", responses));
+    }
+
+    @GetMapping("/public/category/getChildrenCategory/{parentId}")
+    @Operation(summary = "해당 부모의 자식 카테고리 가져오기 (계층별)")
+    public ResponseEntity<GlobalApiResponse<List<CategoryHierarchyResponse>>> getChildCategory(@PathVariable(name = "parentId") Long parentId) {
+        List<CategoryHierarchyResponse> response = categoryService.getChildCategory(parentId);
+        return ResponseEntity.ok(GlobalApiResponse.success("자식 카테고리 가져오기 성공", response));
     }
 
     @PutMapping("/admin/category/updateCategory/{categoryId}")

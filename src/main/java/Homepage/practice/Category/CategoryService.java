@@ -1,5 +1,6 @@
 package Homepage.practice.Category;
 
+import Homepage.practice.Category.DTO.CategoryHierarchyResponse;
 import Homepage.practice.Category.DTO.CategoryRequest;
 import Homepage.practice.Category.DTO.CategoryResponse;
 import Homepage.practice.Category.DTO.CategoryUpdateRequest;
@@ -29,19 +30,34 @@ public class CategoryService {
         categoryRepository.save(category);
         return CategoryResponse.fromEntity(category);
     }
-
-    /** 전체 카테고리 정보 가져오기 */
+/*
+    // 전체 카테고리 정보 가져오기
     public List<CategoryResponse> getAllCategory() {
         return categoryRepository.findAll().stream()
                 .map(CategoryResponse::fromEntity)
                 .toList();
     }
 
-    /** 특정 카테고리 정보 가져오기 */
+    // 특정 카테고리 정보 가져오기
     public CategoryResponse getCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다."));
         return CategoryResponse.fromEntity(category);
+    }
+*/
+
+    /** 루트 카테고리 정보 가져오기 (계층별) */
+    public List<CategoryHierarchyResponse> getRootCategory() {
+        return categoryRepository.findByDepth(0).stream()
+                .map(CategoryHierarchyResponse::fromEntity)
+                .toList();
+    }
+
+    /** 특정 부모의 자식들 카테고리 가져오기 (계층별) */
+    public List<CategoryHierarchyResponse> getChildCategory(Long parentId) {
+        return categoryRepository.findByParentId(parentId).stream()
+                .map(CategoryHierarchyResponse::fromEntity)
+                .toList();
     }
 
     /** 카테고리 정보 수정하기 */

@@ -4,6 +4,7 @@ import Homepage.practice.Category.DTO.CategoryRequest;
 import Homepage.practice.Category.DTO.CategoryUpdateRequest;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class Category {
 
     /** 연관관계 */
     @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Category> children = new ArrayList<>();    // 자식 카테고리 (PK 소유)
 
