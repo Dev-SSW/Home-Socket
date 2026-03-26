@@ -26,7 +26,7 @@ public class CategoryController {
         CategoryResponse response = categoryService.createCategory(request);
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리 생성 성공", response));
     }
-
+/*
     @GetMapping("/public/category/getAllCategory")
     @Operation(summary = "전체 카테고리 가져오기")
     public ResponseEntity<GlobalApiResponse<List<CategoryResponse>>> getAllCategory() {
@@ -40,6 +40,7 @@ public class CategoryController {
         CategoryResponse response = categoryService.getCategory(categoryId);
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리 가져오기 성공", response));
     }
+*/
 
     @GetMapping("/public/category/getRootCategory")
     @Operation(summary = "루트 카테고리 가져오기 (계층별)")
