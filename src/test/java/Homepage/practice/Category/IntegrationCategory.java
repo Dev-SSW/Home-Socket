@@ -71,55 +71,76 @@ public class IntegrationCategory {
 
     @Test
     @Transactional
-    @DisplayName("전체 카테고리 정보 가져오기 성공")
+    @DisplayName("루트 카테고리 가져오기 성공")
     @WithMockUser
-    void getAllCategory_success() throws Exception {
+    void getRootCategory_success() throws Exception {
         // given
         Category testCategory = TestIntegrationInit.createCategory(categoryRepository);
         
         // when & then
-        mockMvc.perform(get("/public/category/getAllCategory")
+        mockMvc.perform(get("/public/category/getRootCategory")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("전체 카테고리 가져오기 성공"))
-                .andExpect(jsonPath("$.data[0].name").value("category1"));
+                .andExpect(jsonPath("$.message").value("루트 카테고리 가져오기 성공"))
+                .andExpect(jsonPath("$.data[0].name").value("category1"))
+                .andExpect(jsonPath("$.data[0].depth").value(0))
+                .andExpect(jsonPath("$.data[0].children").isArray());
     }
 
     @Test
     @Transactional
-    @DisplayName("특정 카테고리 정보 가져오기 성공")
+    @DisplayName("자식 카테고리 가져오기 성공")
     @WithMockUser
-    void getCategory_success() throws Exception {
+    void getChildCategory_success() throws Exception {
         // given
-        Category testCategory = TestIntegrationInit.createCategory(categoryRepository);
+        Category parentCategory = TestIntegrationInit.createCategory(categoryRepository);
+        
+        // 자식 카테고리 직접 생성
+        CategoryRequest childRequest = new CategoryRequest("childCategory", 1, 1, parentCategory.getId());
+        Category category = Category.createCategory(childRequest, parentCategory);
+        categoryRepository.save(category);
 
         // when & then
-        mockMvc.perform(get("/public/category/getCategory/{categoryId}", testCategory.getId())
+        mockMvc.perform(get("/public/category/getChildrenCategory/{parentId}", parentCategory.getId())
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("카테고리 가져오기 성공"))
-                .andExpect(jsonPath("$.data.name").value("category1"))
-                .andExpect(jsonPath("$.data.depth").value(0))
-                .andExpect(jsonPath("$.data.orderIndex").value(1))
-                .andExpect(jsonPath("$.data.parentId").doesNotExist())
-                .andExpect(jsonPath("$.data.childrenIds").isArray());
+                .andExpect(jsonPath("$.message").value("자식 카테고리 가져오기 성공"))
+                .andExpect(jsonPath("$.data[0].name").value("childCategory"))
+                .andExpect(jsonPath("$.data[0].depth").value(1))
+                .andExpect(jsonPath("$.data[0].children").isArray());
     }
 
     @Test
     @Transactional
-    @DisplayName("특정 카테고리 정보 가져오기 실패 - 해당 카테고리 없음")
+    @DisplayName("자식 카테고리 가져오기 실패 - 부모 카테고리 없음")
     @WithMockUser
-    void getCategory_fail() throws Exception {
+    void getChildCategory_fail() throws Exception {
         // given
 
         // when & then
-        mockMvc.perform(get("/public/category/getCategory/{categoryId}", 999L)
+        mockMvc.perform(get("/public/category/getChildrenCategory/{parentId}", 999L)
                         .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("아이디에 해당하는 카테고리가 없습니다."))
+                .andExpect(jsonPath("$.message").value("아이디에 해당하는 부모 카테고리가 없습니다."))
+                .andExpect(jsonPath("$.error").value("CATEGORY_NOT_FOUND"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("루트 카테고리 가져오기 실패 - 루트 카테고리 없음")
+    @WithMockUser
+    void getRootCategory_fail() throws Exception {
+        // given - 빈 데이터베이스 상태
+
+        // when & then
+        mockMvc.perform(get("/public/category/getRootCategory")
+                        .with(csrf()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("루트 카테고리가 존재하지 않습니다."))
                 .andExpect(jsonPath("$.error").value("CATEGORY_NOT_FOUND"));
     }
 
