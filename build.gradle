@@ -18,19 +18,21 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'			  // datajpa
-	implementation 'org.springframework.boot:spring-boot-starter-web'				  // web
-	implementation 'org.springframework.boot:spring-boot-starter-validation'		  // validation
-	implementation 'org.springframework.boot:spring-boot-starter-security'     		  // Spring Security
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'		  // OAuth2
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'						   		  // JWT Web 토큰
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'   		  // Swagger
-	implementation 'io.github.cdimascio:java-dotenv:5.2.2'					   		  // env
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE' // AWS S3
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'			  		 // datajpa
+	implementation 'org.springframework.boot:spring-boot-starter-web'				  			 // web
+	implementation 'org.springframework.boot:spring-boot-starter-validation'		  			 // validation
+	implementation 'org.springframework.boot:spring-boot-starter-security'     		  		 // Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'		  		 // OAuth2
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'						   		  							 // JWT Web 토큰
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'   		  	 	 // Swagger
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'					   		  					 // env
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'  // AWS S3
+	implementation 'org.flywaydb:flyway-core'																	 // Flyway
 
 	// runtimeOnly
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	runtimeOnly 'org.flywaydb:flyway-mysql'																		//MySQL용
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// lombok
@@ -38,9 +40,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// test
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'	// JUnit5, AssertJ, Spring Test 등 기본 테스트 기능
-	testImplementation 'org.springframework.security:spring-security-test'	// Security 관련 테스트 기능
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'			// JUnit 플랫폼 런처
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'					// JUnit5, AssertJ, Spring Test 등 기본 테스트 기능
+	testImplementation 'org.springframework.security:spring-security-test'					// Security 관련 테스트 기능
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'										// JUnit 플랫폼 런처
 }
 
 tasks.named('test') {
