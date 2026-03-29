@@ -19,6 +19,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
+/*
     @PostMapping("/user/order/createOrder")
     @Operation(summary = "개별 바로 주문")
     public ResponseEntity<GlobalApiResponse<OrderResponse>> createOrder(@AuthenticationPrincipal User user,
@@ -26,6 +27,7 @@ public class OrderController {
         OrderResponse response = orderService.createOrder(user.getId(), request);
         return ResponseEntity.ok(GlobalApiResponse.success("개별 주문 성공", response));
     }
+*/
 
     @PostMapping("/user/order/createCartOrder")
     @Operation(summary = "장바구니로 주문")
