@@ -1,8 +1,11 @@
 package Homepage.practice.Delivery;
 
-import Homepage.practice.Delivery.DTO.AddressRequest;
-import Homepage.practice.Delivery.DTO.AddressResponse;
-import Homepage.practice.Delivery.DTO.AddressUpdateRequest;
+import Homepage.practice.Address.Address;
+import Homepage.practice.Address.AddressRepository;
+import Homepage.practice.Address.AddressService;
+import Homepage.practice.Address.DTO.AddressRequest;
+import Homepage.practice.Address.DTO.AddressResponse;
+import Homepage.practice.Address.DTO.AddressUpdateRequest;
 import Homepage.practice.TestUnitInit;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;

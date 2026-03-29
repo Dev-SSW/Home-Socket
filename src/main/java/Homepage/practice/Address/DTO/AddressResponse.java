@@ -1,6 +1,6 @@
-package Homepage.practice.Delivery.DTO;
+package Homepage.practice.Address.DTO;
 
-import Homepage.practice.Delivery.Address;
+import Homepage.practice.Address.Address;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

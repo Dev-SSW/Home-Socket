@@ -3,7 +3,7 @@ package Homepage.practice.Order.DTO;
 import Homepage.practice.CartItem.DTO.CartItemResponse;
 import Homepage.practice.CouponPublish.CouponPublishStatus;
 import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
-import Homepage.practice.Delivery.DTO.AddressResponse;
+import Homepage.practice.Address.DTO.AddressResponse;
 import Homepage.practice.User.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 

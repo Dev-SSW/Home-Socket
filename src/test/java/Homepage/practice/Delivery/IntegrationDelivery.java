@@ -1,5 +1,7 @@
 package Homepage.practice.Delivery;
 
+import Homepage.practice.Address.Address;
+import Homepage.practice.Address.AddressRepository;
 import Homepage.practice.Delivery.DTO.DeliveryRequest;
 import Homepage.practice.Order.Order;
 import Homepage.practice.Order.OrderRepository;

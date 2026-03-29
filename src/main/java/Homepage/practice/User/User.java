@@ -2,7 +2,7 @@ package Homepage.practice.User;
 
 import Homepage.practice.Cart.Cart;
 import Homepage.practice.CouponPublish.CouponPublish;
-import Homepage.practice.Delivery.Address;
+import Homepage.practice.Address.Address;
 import Homepage.practice.Order.Order;
 import Homepage.practice.Review.Review;
 import Homepage.practice.User.DTO.SignupRequest;
