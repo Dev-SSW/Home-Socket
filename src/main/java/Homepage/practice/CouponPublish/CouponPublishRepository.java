@@ -22,4 +22,9 @@ public interface CouponPublishRepository extends JpaRepository<CouponPublish, Lo
 
     /** 유저로 쿠폰 찾기 */
     List<CouponPublish> findByUser(User user);
+
+    /** 유저의 사용 가능한 쿠폰 목록 조회 */
+    @Query("select cp from CouponPublish cp join fetch cp.coupon where cp.user.id = :userId and cp.status = :status")
+    List<CouponPublish> findAvailableCouponsByUserId(
+            @Param("userId") Long userId, @Param("status") CouponPublishStatus status);
 }

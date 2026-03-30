@@ -25,9 +25,8 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("select a from Address a where a.user.id = :userId order by a.id ASC")
     Address findFirstByUserIdOrderByIdAsc(@Param("userId") Long userId);
 
-    /** DTO 프로젝션 */
-    @Query("select new AddressResponse(a.id, a.street, a.detailStreet, a.zipcode, a.defaultAddress) " +
+    /** 유저의 주소 목록을 DTO로 조회 */
+    @Query("select new Homepage.practice.Address.DTO.AddressResponse(a.id, a.street, a.detailStreet, a.zipcode, a.defaultAddress) " +
             "from Address a where a.user.id = :userId")
-    List<AddressResponse> findAddressesByUserId(@Param("userId") Long userId);
-
+    List<AddressResponse> findAddressResponsesByUserId(@Param("userId") Long userId);
 }
