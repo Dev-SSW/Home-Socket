@@ -1,8 +1,8 @@
-package Homepage.practice.Delivery;
+package Homepage.practice.Address;
 
-import Homepage.practice.Delivery.DTO.AddressRequest;
-import Homepage.practice.Delivery.DTO.AddressResponse;
-import Homepage.practice.Delivery.DTO.AddressUpdateRequest;
+import Homepage.practice.Address.DTO.AddressRequest;
+import Homepage.practice.Address.DTO.AddressResponse;
+import Homepage.practice.Address.DTO.AddressUpdateRequest;
 import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.User.User;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,19 +1,19 @@
 package Homepage.practice.Order;
 
+import Homepage.practice.Address.DTO.AddressResponse;
 import Homepage.practice.Cart.Cart;
 import Homepage.practice.Cart.CartRepository;
 import Homepage.practice.Cart.CartService;
-import Homepage.practice.CartItem.CartItem;
 import Homepage.practice.CartItem.CartItemRepository;
+import Homepage.practice.CartItem.DTO.CartItemResponse;
 import Homepage.practice.CouponPublish.CouponPublish;
 import Homepage.practice.CouponPublish.CouponPublishRepository;
-import Homepage.practice.Delivery.Address;
-import Homepage.practice.Delivery.AddressRepository;
+import Homepage.practice.Address.Address;
+import Homepage.practice.Address.AddressRepository;
+import Homepage.practice.CouponPublish.CouponPublishStatus;
+import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
 import Homepage.practice.Delivery.Delivery;
-import Homepage.practice.Delivery.DeliveryRepository;
 import Homepage.practice.Exception.*;
-import Homepage.practice.Item.Item;
-import Homepage.practice.Item.ItemRepository;
 import Homepage.practice.Order.DTO.*;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.User.User;
@@ -33,30 +33,31 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
-    private final ItemRepository itemRepository;
     private final CouponPublishRepository couponPublishRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final DeliveryRepository deliveryRepository;
     private final CartService cartService;
 
-    /** 개별 바로 주문 */
+/*
+    */
+/** 개별 바로 주문 *//*
+
     @Transactional
     public OrderResponse createOrder(Long userId, OrderIndividualRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
-
+        Order order = Order.createOrder()
         // Cart 가져오기 (없으면 생성)
         Cart cart = cartRepository.findByUser(user)
                 .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
         // 장바구니에 바로 구매할 아이템 추가
         CartItem cartItem = CartItem.createCartItem(cart, item, request.getQuantity());
-        cartItemRepository.save(cartItem);
 
         return createCartOrder(userId, new OrderRequest(request.getAddressId(), request.getCouponPublishId(), List.of(cartItem.getId())));
     }
+*/
 
     /** 장바구니로 주문 */
     @Transactional
@@ -65,16 +66,13 @@ public class OrderService {
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         Address address = addressRepository.findById(request.getAddressId())
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
-        Cart cart = cartRepository.findByUser(user)
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(userId)
                 .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
 
         List<OrderItem> orderItems = cart.getCartItems().stream()
                 // 선택된 Item만 가져오기
                 .filter(cartItem -> request.getCartItemIds().contains(cartItem.getId()))
-                .map(cartItem -> {
-                    // cartItem을 순회하며 OrderItem 만들기
-                    return OrderItem.createOrderItem(cartItem.getItem(), cartItem.getQuantity());
-                })
+                .map(cartItem -> OrderItem.createOrderItem(cartItem.getItem(), cartItem.getQuantity()))
                 .collect(Collectors.toList());
 
         // 총 합계 구하기
@@ -90,13 +88,10 @@ public class OrderService {
         }
 
         Order order = Order.createOrder(user, couponPublish, totalPrice);
-        Delivery delivery = Delivery.createDelivery(order, address);
-        deliveryRepository.save(delivery);
+        Delivery.createDelivery(order, address); // Cascade
         orderItems.forEach(order::addOrderItem);
         orderRepository.save(order);
-
         cartService.deleteItems(user, request.getCartItemIds());
-
         return OrderResponse.fromEntity(order);
     }
 
@@ -110,22 +105,38 @@ public class OrderService {
 
     /** 사용자의 주문 목록 조회 */
     public List<OrderListResponse> getOrderList(Long userId) {
-        return orderRepository.findByUserId(userId).stream()
-                .map(OrderListResponse::fromEntity)
-                .collect(Collectors.toList());
+        return orderRepository.findOrderListByUserId(userId);
     }
 
     /** 주문 상세 페이지 */
     public OrderDetailResponse getOrderDetail(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findOrderDetailById(orderId)
                 .orElseThrow(() -> new OrderNotFound("아이디에 해당하는 주문이 없습니다."));
         return OrderDetailResponse.fromEntity(order);
     }
 
     /** 주문 페이지 */
     public OrderPageResponse getOrderPage(Long userId) {
-        User user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        return OrderPageResponse.of(user);
+        
+        List<AddressResponse> addressResponses =
+                addressRepository.findAddressResponsesByUserId(userId);
+        
+        List<CouponPublishResponse> couponPublishResponses =
+                couponPublishRepository.findAvailableCouponsByUserId(userId, CouponPublishStatus.AVAILABLE).stream()
+                        .map(CouponPublishResponse::fromEntity)
+                        .collect(Collectors.toList());
+        
+        List<CartItemResponse> cartItemResponses =
+                cartItemRepository.findCartItemsByUserId(userId).stream()
+                        .map(CartItemResponse::fromEntity)
+                        .collect(Collectors.toList());
+        
+        return OrderPageResponse.builder()
+                .addressResponses(addressResponses)
+                .couponPublishResponses(couponPublishResponses)
+                .cartItemResponses(cartItemResponses)
+                .build();
     }
 }

@@ -48,13 +48,24 @@ public class CategoryService {
 
     /** 루트 카테고리 정보 가져오기 (계층별) */
     public List<CategoryHierarchyResponse> getRootCategory() {
-        return categoryRepository.findByDepth(0).stream()
+        List<CategoryHierarchyResponse> rootCategories = categoryRepository.findByDepth(0).stream()
                 .map(CategoryHierarchyResponse::fromEntity)
                 .toList();
+        
+        if (rootCategories.isEmpty()) {
+            throw new CategoryNotFound("루트 카테고리가 존재하지 않습니다.");
+        }
+        
+        return rootCategories;
     }
 
     /** 특정 부모의 자식들 카테고리 가져오기 (계층별) */
     public List<CategoryHierarchyResponse> getChildCategory(Long parentId) {
+        // 부모 카테고리 존재 여부 확인
+        if (!categoryRepository.existsById(parentId)) {
+            throw new CategoryNotFound("아이디에 해당하는 부모 카테고리가 없습니다.");
+        }
+        
         return categoryRepository.findByParentId(parentId).stream()
                 .map(CategoryHierarchyResponse::fromEntity)
                 .toList();

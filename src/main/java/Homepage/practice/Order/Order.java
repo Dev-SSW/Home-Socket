@@ -27,7 +27,7 @@ public class Order {
     private BigDecimal totalPrice;      // 주문 총 가격
 
     /** 연관관계 */
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Delivery delivery;
 
     @Builder.Default

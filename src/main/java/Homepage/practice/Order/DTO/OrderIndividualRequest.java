@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 public class OrderIndividualRequest {
     @NotNull(message = "주소 ID를 입력하셔야 합니다.")
     private Long addressId;
-    @NotNull(message = "발급 쿠폰 ID를 입력하셔야 합니다.")
     private Long couponPublishId;
     @NotNull(message = "상품 ID를 입력하셔야 합니다.")
     private Long itemId;

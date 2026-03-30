@@ -2,7 +2,7 @@ package Homepage.practice.User;
 
 import Homepage.practice.Cart.Cart;
 import Homepage.practice.CouponPublish.CouponPublish;
-import Homepage.practice.Delivery.Address;
+import Homepage.practice.Address.Address;
 import Homepage.practice.Order.Order;
 import Homepage.practice.Review.Review;
 import Homepage.practice.User.DTO.SignupRequest;
@@ -50,7 +50,7 @@ public class User implements UserDetails, OAuth2User {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<CouponPublish> couponPublishes = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Cart cart;
 
     /** 연관관계 편의 메서드 */

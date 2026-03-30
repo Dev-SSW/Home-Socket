@@ -1,5 +1,6 @@
-package Homepage.practice.Delivery;
+package Homepage.practice.Address;
 
+import Homepage.practice.Address.DTO.AddressResponse;
 import Homepage.practice.User.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,9 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     /** 유저의 주소 중 첫번째 주소를 조회 */
     @Query("select a from Address a where a.user.id = :userId order by a.id ASC")
     Address findFirstByUserIdOrderByIdAsc(@Param("userId") Long userId);
+
+    /** 유저의 주소 목록을 DTO로 조회 */
+    @Query("select new Homepage.practice.Address.DTO.AddressResponse(a.id, a.street, a.detailStreet, a.zipcode, a.defaultAddress) " +
+            "from Address a where a.user.id = :userId")
+    List<AddressResponse> findAddressResponsesByUserId(@Param("userId") Long userId);
 }

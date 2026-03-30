@@ -22,9 +22,9 @@ spring:
 
   # DB 설정
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL2}
+    username: ${SPRING_DATASOURCE_USERNAME2}
+    password: ${SPRING_DATASOURCE_PASSWORD2}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련

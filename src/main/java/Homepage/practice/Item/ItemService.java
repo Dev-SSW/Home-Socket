@@ -6,13 +6,13 @@ import Homepage.practice.Exception.CategoryNotFound;
 import Homepage.practice.Exception.ItemNotFound;
 import Homepage.practice.Item.DTO.ItemRequest;
 import Homepage.practice.Item.DTO.ItemResponse;
+import Homepage.practice.Item.DTO.ItemResponseCategory;
 import Homepage.practice.Item.DTO.ItemUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +32,8 @@ public class ItemService {
     }
 
     /** 전체 상품 조회 */
-    public List<ItemResponse> getAllItem() {
-        return itemRepository.findAll().stream()
-                .map(ItemResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<ItemResponse> getAllItem(Pageable pageable) {
+        return itemRepository.findAllItem(pageable);
     }
 
     /** 특정 상품 조회 */
@@ -43,6 +41,14 @@ public class ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
         return ItemResponse.fromEntity(item);
+    }
+
+    /** 카테고리 별 아이템 조회 */
+    public Page<ItemResponseCategory> getItemsByCategory(Long categoryId, Pageable pageable) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다.");
+        }
+        return itemRepository.findItemsByCategory(categoryId, pageable);
     }
 
     /** 상품 수정하기 */
