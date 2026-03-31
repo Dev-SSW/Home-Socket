@@ -20,6 +20,14 @@ public class ReviewResponse {
     private String comment;         // 내용
     private float star;             // 별점
     private LocalDate reviewDate;   // 리뷰 날짜
+    
+    // User 정보
+    private Long userId;
+    private String username;
+    
+    // Item 정보
+    private Long itemId;
+    private String itemName;
 
     public static ReviewResponse fromEntity(Review review) {
         return ReviewResponse.builder()
@@ -28,6 +36,10 @@ public class ReviewResponse {
                 .comment(review.getComment())
                 .star(review.getStar())
                 .reviewDate(review.getReviewDate())
+                .userId(review.getUser().getId())
+                .username(review.getUser().getUsername())
+                .itemId(review.getItem().getId())
+                .itemName(review.getItem().getName())
                 .build();
     }
 }

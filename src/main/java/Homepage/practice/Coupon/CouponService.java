@@ -6,11 +6,10 @@ import Homepage.practice.Coupon.DTO.CouponUpdateRequest;
 import Homepage.practice.Exception.CouponAlreadyExists;
 import Homepage.practice.Exception.CouponNotFound;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,17 +29,14 @@ public class CouponService {
     }
 
     /** 모든 쿠폰 조회 */
-    public List<CouponResponse> getAllCoupon() {
-        return couponRepository.findAll().stream()
-                .map(CouponResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<CouponResponse> getAllCoupon(Pageable pageable) {
+        return couponRepository.findAllCoupons(pageable);
     }
 
     /** 특정 쿠폰 조회 */
     public CouponResponse getCoupon(Long couponId) {
-        Coupon coupon = couponRepository.findById(couponId)
+        return couponRepository.findCouponById(couponId)
                 .orElseThrow(() -> new CouponNotFound("아이디에 해당하는 쿠폰이 없습니다."));
-        return CouponResponse.fromEntity(coupon);
     }
 
     /** 쿠폰 수정 */

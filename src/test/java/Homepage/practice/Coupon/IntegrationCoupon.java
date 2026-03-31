@@ -75,11 +75,13 @@ class IntegrationCoupon {
         Coupon testCoupon = TestIntegrationInit.createCoupon(couponRepository);
 
         // when & then
-        mockMvc.perform(get("/admin/coupon/getAllCoupon"))
+        mockMvc.perform(get("/admin/coupon/getAllCoupon")
+                .param("page", "0")
+                .param("size", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("모든 쿠폰 조회 성공"))
-                .andExpect(jsonPath("$.data[0].name").value("coupon1"));
+                .andExpect(jsonPath("$.data.content[0].name").value("coupon1"));
     }
 
     @Test

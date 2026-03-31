@@ -1,7 +1,6 @@
 package Homepage.practice.CouponPublish;
 
-import Homepage.practice.Coupon.Coupon;
-import Homepage.practice.User.User;
+import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,14 +16,17 @@ public interface CouponPublishRepository extends JpaRepository<CouponPublish, Lo
     List<CouponPublish> findAllByStatusAndValidEndBefore(@Param("status") CouponPublishStatus status, @Param("date") LocalDate date);
 
     /** 이미 발급된 쿠폰인지 확인 */
-    @Query("select case when count(cp) > 0 then true else false end from CouponPublish cp where cp.user = :user and cp.coupon = :coupon")
-    boolean existsByUserAndCoupon(@Param("user") User user, @Param("coupon") Coupon coupon);
-
-    /** 유저로 쿠폰 찾기 */
-    List<CouponPublish> findByUser(User user);
-
+    @Query("select case when count(cp) > 0 then true else false end from CouponPublish cp where cp.user.id = :userId and cp.coupon.id = :couponId")
+    boolean existsByUserIdAndCouponId(@Param("userId") Long userId, @Param("couponId") Long couponId);
+    
     /** 유저의 사용 가능한 쿠폰 목록 조회 */
     @Query("select cp from CouponPublish cp join fetch cp.coupon where cp.user.id = :userId and cp.status = :status")
     List<CouponPublish> findAvailableCouponsByUserId(
             @Param("userId") Long userId, @Param("status") CouponPublishStatus status);
+    
+    /** 유저의 쿠폰 목록을 DTO로 조회 */
+    @Query("select new Homepage.practice.CouponPublish.DTO.CouponPublishResponse(" +
+            "cp.id, cp.validStart, cp.validEnd, cp.status, c.name, c.discount) " +
+            "from CouponPublish cp join cp.coupon c where cp.user.id = :userId")
+    List<CouponPublishResponse> findCouponPublishByUserId(@Param("userId") Long userId);
 }

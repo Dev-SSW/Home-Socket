@@ -73,46 +73,12 @@ public class UnitOrder {
     }
 
     @Test
-    @DisplayName("개별 바로 주문 성공")
-    void createOrder_success() {
-        // given
-        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
-        given(itemRepository.findById(testItem.getId())).willReturn(Optional.of(testItem));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
-        given(cartItemRepository.save(any(CartItem.class))).willAnswer(inv -> {
-                    CartItem ci = inv.getArgument(0);
-                    ReflectionTestUtils.setField(ci, "id", 100L);
-                    return ci;
-        });
-        given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
-        given(couponPublishRepository.findById(testCouponPublish.getId())).willReturn(Optional.of(testCouponPublish));
-
-        // when
-        OrderResponse response = orderService.createOrder(testUser.getId(),
-                new OrderIndividualRequest(testAddress.getId(), testCouponPublish.getId(), testItem.getId(), 2));
-
-        // then
-        verify(cartItemRepository).save(any(CartItem.class));
-        verify(deliveryRepository).save(any(Delivery.class));
-        verify(orderRepository).save(any(Order.class));
-        verify(cartService).deleteItems(testUser, List.of(100L));
-        // 총 금액 계산
-        assertThat(response.getTotalPrice().compareTo(BigDecimal.valueOf(19000))).isZero();
-        // createOrderItem에서 재고 사용
-        assertThat(testItem.getStock()).isEqualTo(998);
-        // createOrder에서 useCoupon() 사용
-        assertThat(testCouponPublish.getStatus()).isEqualTo(CouponPublishStatus.USED);
-        // createDelivery에서 READY로 상태 변화
-        assertThat(testUser.getOrders().get(0).getDelivery().getStatus()).isEqualTo(DeliveryStatus.READY);
-    }
-
-    @Test
     @DisplayName("장바구니로 주문 성공")
     void createCartOrder_success() {
         // given
         given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
         given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
         given(couponPublishRepository.findById(testCouponPublish.getId())).willReturn(Optional.of(testCouponPublish));
 
         // when
@@ -120,7 +86,6 @@ public class UnitOrder {
                 new OrderRequest(testAddress.getId(), testCouponPublish.getId(), List.of(testCartItem.getId())));
 
         // then
-        verify(deliveryRepository).save(any(Delivery.class));
         verify(orderRepository).save(any(Order.class));
         verify(cartService).deleteItems(testUser, List.of(testCartItem.getId()));
         // 총 금액 계산

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,10 +46,8 @@ public class CartService {
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
 
-        // CartItem이 Cart에 이미 존재하는지 확인하고, 존재한다면 가져옴
-        CartItem exit = cart.getCartItems().stream()
-                .filter(ci -> ci.getItem().equals(item))    //Cart의 CartItem을 순회하며 각 CartItem의 Item이 위의 Item과 같으면 해당 CarItem을 반환
-                .findFirst()
+        // CartItem이 Cart에 이미 존재하는지 확인
+        CartItem exit = cartItemRepository.findByCartAndItem(cart, item)
                 .orElse(null);
 
         if (exit != null) { // CartItem이 이미 존재할 때
@@ -78,11 +77,11 @@ public class CartService {
     public CartResponse deleteItem(User user, Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new CartItemNotFound("아이디에 해당하는 장바구니 아이템이 없습니다."));
+        Cart cart = cartItem.getCart();
         // 소유자 검증
-        if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
+        if (!cart.getUser().getId().equals(user.getId())) {
             throw new CartAccessDenied("본인 장바구니만 수정할 수 있습니다.");
         }
-        Cart cart = cartItem.getCart();
         cartItemRepository.delete(cartItem);
         return CartResponse.fromEntity(cart);
     }
@@ -93,16 +92,19 @@ public class CartService {
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
 
-        // 소유자 검증 + 삭제
-        cartItemIds.forEach(id -> {
-            CartItem cartItem = cartItemRepository.findById(id)
-                    .orElseThrow(() -> new CartItemNotFound("아이디에 해당하는 장바구니 아이템이 없습니다."));
-            if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
-                throw new CartAccessDenied("본인 장바구니만 수정할 수 있습니다.");
-            }
-            cartItemRepository.delete(cartItem);
-        });
-
+        // 먼저 존재하는 ID 목록 확인
+        List<Long> existingIds = cartItemRepository.findExistingIds(cartItemIds, user.getId());
+        
+        // 요청한 ID 중 존재하지 않는 ID가 있으면 예외
+        if (existingIds.size() != cartItemIds.size()) {
+            List<Long> nonExistingIds = cartItemIds.stream()
+                    .filter(id -> !existingIds.contains(id))
+                    .collect(Collectors.toList());
+            throw new CartItemNotFound("다음 ID에 해당하는 장바구니 아이템이 없습니다: " + nonExistingIds);
+        }
+        
+        // 벌크 삭제 실행
+        int deletedCount = cartItemRepository.deleteByIdsAndUserId(cartItemIds, user.getId());
         return CartResponse.fromEntity(cart);
     }
 

@@ -40,9 +40,11 @@ public class UnitCouponPublish {
     void publishCoupon_success() {
         // given
         Coupon testCoupon = TestUnitInit.createCoupon(2L);
-        given(couponRepository.findById(testCoupon.getId())).willReturn(Optional.of(testCoupon));
-        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
-        given(couponPublishRepository.existsByUserAndCoupon(testUser, testCoupon)).willReturn(false);
+        given(couponRepository.existsById(testCoupon.getId())).willReturn(true);
+        given(userRepository.existsById(testUser.getId())).willReturn(true);
+        given(couponPublishRepository.existsByUserIdAndCouponId(testUser.getId(), testCoupon.getId())).willReturn(false);
+        given(couponRepository.getReferenceById(testCoupon.getId())).willReturn(testCoupon);
+        given(userRepository.getReferenceById(testUser.getId())).willReturn(testUser);
 
         // when
         CouponPublishResponse response = couponPublishService.publishCoupon(testCoupon.getId(), testUser.getId());

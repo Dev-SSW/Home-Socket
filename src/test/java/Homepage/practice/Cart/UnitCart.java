@@ -86,6 +86,7 @@ class UnitCart {
         given(userRepository.findByUsername(testUser.getUsername())).willReturn(Optional.of(testUser));
         given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
         given(itemRepository.findById(testItem.getId())).willReturn(Optional.of(testItem));
+        given(cartItemRepository.findByCartAndItem(testCart, testItem)).willReturn(Optional.of(testCartItem));
 
         // when
         CartResponse response = cartService.addItem(testUser.getUsername(), new CartItemRequest(testItem.getId(), 3));
@@ -144,13 +145,14 @@ class UnitCart {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
         given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
-        given(cartItemRepository.findById(testCartItem.getId())).willReturn(Optional.of(testCartItem));
+        given(cartItemRepository.findExistingIds(List.of(testCartItem.getId()), testUser.getId())).willReturn(List.of(testCartItem.getId()));
 
         // when
         CartResponse response = cartService.deleteItems(testUser, List.of(testCartItem.getId()));
 
         // then
-        verify(cartItemRepository).delete(any(CartItem.class));
+        verify(cartItemRepository).findExistingIds(List.of(testCartItem.getId()), testUser.getId());
+        verify(cartItemRepository).deleteByIdsAndUserId(List.of(testCartItem.getId()), testUser.getId());
     }
 
     @Test

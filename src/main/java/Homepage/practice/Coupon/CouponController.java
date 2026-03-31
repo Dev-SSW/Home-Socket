@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +30,8 @@ public class CouponController {
 
     @GetMapping("/admin/coupon/getAllCoupon")
     @Operation(summary = "모든 쿠폰 조회하기")
-    public ResponseEntity<GlobalApiResponse<List<CouponResponse>>> getAllCoupon() {
-        List<CouponResponse> responses = couponService.getAllCoupon();
+    public ResponseEntity<GlobalApiResponse<Page<CouponResponse>>> getAllCoupon(Pageable pageable) {
+        Page<CouponResponse> responses = couponService.getAllCoupon(pageable);
         return ResponseEntity.ok(GlobalApiResponse.success("모든 쿠폰 조회 성공", responses));
     }
 

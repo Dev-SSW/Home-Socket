@@ -26,14 +26,23 @@ public class CouponPublishService {
     /** 특정 유저에게 쿠폰 발급 */
     @Transactional
     public CouponPublishResponse publishCoupon(Long couponId, Long userId) {
-        Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new CouponNotFound("아이디에 해당하는 쿠폰이 없습니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        if (couponPublishRepository.existsByUserAndCoupon(user, coupon)) {
+        // 존재 여부만 확인 (불필요한 전체 객체 조회 방지)
+        if (!couponRepository.existsById(couponId)) {
+            throw new CouponNotFound("아이디에 해당하는 쿠폰이 없습니다.");
+        }
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFound("아이디에 해당하는 회원이 없습니다.");
+        }
+        
+        // ID 기반으로 중복 발급 확인
+        if (couponPublishRepository.existsByUserIdAndCouponId(userId, couponId)) {
             throw new CouponPublishAlreadyExist("이미 발급받은 쿠폰 입니다.");
         }
 
+        // 생성에 필요한 객체 Proxy 사용
+        Coupon coupon = couponRepository.getReferenceById(couponId);
+        User user = userRepository.getReferenceById(userId);
+        
         CouponPublish couponPublish = CouponPublish.createCoupon(coupon, user);
         couponPublishRepository.save(couponPublish);
         return CouponPublishResponse.fromEntity(couponPublish);
@@ -41,9 +50,7 @@ public class CouponPublishService {
 
     /** 유저의 쿠폰 조회 */
     public List<CouponPublishResponse> getCouponPublish(User user) {
-        List<CouponPublish> couponPublishes = couponPublishRepository.findByUser(user);
-        return couponPublishes.stream()
-                .map(CouponPublishResponse::fromEntity)
-                .collect(Collectors.toList());
+        // DTO Projection으로 바로 조회
+        return couponPublishRepository.findCouponPublishByUserId(user.getId());
     }
 }

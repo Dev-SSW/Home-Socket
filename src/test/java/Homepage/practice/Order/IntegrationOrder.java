@@ -16,7 +16,6 @@ import Homepage.practice.CouponPublish.CouponPublishRepository;
 import Homepage.practice.Delivery.*;
 import Homepage.practice.Item.Item;
 import Homepage.practice.Item.ItemRepository;
-import Homepage.practice.Order.DTO.OrderIndividualRequest;
 import Homepage.practice.Order.DTO.OrderRequest;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.OrderItem.OrderItemRepository;
@@ -86,24 +85,6 @@ public class IntegrationOrder {
 
     @Test
     @Transactional
-    @DisplayName("개별 바로 주문 성공")
-    void createOrder_success() throws Exception {
-        // given
-
-        // when & then
-        mockMvc.perform(post("/user/order/createOrder")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new OrderIndividualRequest(testAddress.getId(), testCouponPublish.getId(), testItem.getId(), 2)))
-                        .with(user(testUser)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("개별 주문 성공"))
-                .andExpect(jsonPath("$.data.totalPrice").value(19000));
-    }
-
-    @Test
-    @Transactional
     @DisplayName("장바구니로 주문 성공 성공")
     void createCartOrder_success() throws Exception {
         // given
@@ -149,7 +130,7 @@ public class IntegrationOrder {
         Order testOrder = TestIntegrationInit.createOrder(orderRepository, testUser, testCouponPublish, BigDecimal.valueOf(19000));
         OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderItemRepository, testItem, 2);
         testOrder.addOrderItem(testOrderItem);
-        Delivery testDelivery = TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
+        TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
 
         // when & then
         mockMvc.perform(get("/user/order/getOrderList")
@@ -169,7 +150,7 @@ public class IntegrationOrder {
         Order testOrder = TestIntegrationInit.createOrder(orderRepository, testUser, testCouponPublish, BigDecimal.valueOf(19000));
         OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderItemRepository, testItem, 2);
         testOrder.addOrderItem(testOrderItem);
-        Delivery testDelivery = TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
+        TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
 
         // when & then
         mockMvc.perform(get("/user/order/{orderId}/getOrderDetail", testOrder.getId() )
