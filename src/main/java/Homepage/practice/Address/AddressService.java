@@ -23,8 +23,9 @@ public class AddressService {
     /** 주소 생성 */
     @Transactional
     public AddressResponse createAddress(Long userId, AddressRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFound("아이디에 해당하는 회원이 없습니다.");
+        }
 
         // 유저의 기본 배송지 확인
         Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
@@ -36,8 +37,8 @@ public class AddressService {
                 currentDefault.setDefaultAddress(false);
             }
         } else {
-            // 기본 배송지가 없는 상황 / 유저의 첫 주소라면 자동으로 기본 배송지 설정
-            if (addressRepository.countByUser(user) == 0) {
+            // 기본 배송기 (false)로 입력 시에 만약 해당 주소가 유저의 첫 주소라면 자동으로 기본 배송지 설정
+            if (addressRepository.countByUserId(userId) == 0) {
                 request = new AddressRequest(
                         request.getStreet(),
                         request.getDetailStreet(),
@@ -45,6 +46,9 @@ public class AddressService {
                         true);
             }
         }
+        
+        // 프록시 객체 반환 (생성시에만 필요하므로)
+        User user = userRepository.getReferenceById(userId);
         Address address = Address.createAddress(user, request);
         addressRepository.save(address);
         return AddressResponse.fromEntity(address);
@@ -52,9 +56,11 @@ public class AddressService {
 
     /** 유저의 전체 주소 조회 */
     public List<AddressResponse> getAllAddress(Long userId) {
-        return addressRepository.findByUserId(userId).stream()
-                .map(AddressResponse::fromEntity)
-                .toList();
+        //  DTO Projection으로 바로 조회
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFound("아이디에 해당하는 회원이 없습니다.");
+        }
+        return addressRepository.findAddressResponsesByUserId(userId);
     }
 
     /** 유저의 특정 주소 조회 */
@@ -70,17 +76,22 @@ public class AddressService {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
 
+        // 소유자 검증
+        if (!address.getUser().getId().equals(userId)) {
+            throw new UserNotFound("소유자 검증 실패");
+        }
+
         // 기본 배송지 로직 반영
         Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
+        // 수정을 요청한 주소를 기본 주소로 설정하려고 한다면
         if (request.isDefaultAddress()) {
+            // 기존의 기본 주소를 false 처리
             if (currentDefault != null && !currentDefault.getId().equals(addressId)) {
                 currentDefault.setDefaultAddress(false);
             }
             address.setDefaultAddress(true);
         }
-
         address.updateAddress(request);
-
         return AddressResponse.fromEntity(address);
     }
 
@@ -89,6 +100,11 @@ public class AddressService {
     public void deleteAddress(Long userId, Long addressId) {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
+
+        // 소유자 검증
+        if (!address.getUser().getId().equals(userId)) {
+            throw new UserNotFound("소유자 검증 실패");
+        }
 
         // 삭제하는 배송지가 기본 배송지인지 확인하기 위함
         boolean wasDefault = address.isDefaultAddress();
@@ -108,6 +124,11 @@ public class AddressService {
     public void updateDefault(Long userId, Long addressId) {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
+
+        // 소유자 검증
+        if (!address.getUser().getId().equals(userId)) {
+            throw new UserNotFound("소유자 검증 실패");
+        }
 
         // 기존 기본 배송지 해제
         Address currentDefault = addressRepository.findByUserIdAndDefaultAddressTrue(userId);
