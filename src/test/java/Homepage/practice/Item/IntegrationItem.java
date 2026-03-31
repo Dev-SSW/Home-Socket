@@ -88,11 +88,13 @@ public class IntegrationItem {
 
         // when & then
         mockMvc.perform(get("/public/item/getAllItem")
+                        .param("page", "0")
+                        .param("size", "3")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("전체 상품 가져오기 성공"))
-                .andExpect(jsonPath("$.data[0].name").value("item1"));
+                .andExpect(jsonPath("$.data.content[0].name").value("item1"));
     }
 
     @Test

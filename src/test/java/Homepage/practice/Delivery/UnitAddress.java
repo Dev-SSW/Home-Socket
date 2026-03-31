@@ -44,9 +44,9 @@ public class UnitAddress {
     @DisplayName("주소 생성 성공 - 기본 배송지 존재하는데 true로 들어온 상황")
     void createAddress_success1() {
         // given
-        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
         given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(testAddress);
-
+        given(userRepository.existsById(testUser.getId())).willReturn(true);
+        given(userRepository.getReferenceById(testUser.getId())).willReturn(testUser);
         // when
         AddressResponse response = addressService.createAddress(testUser.getId(),
                 new AddressRequest("address2", "detailStreet2", "zipcode", true));
@@ -63,10 +63,11 @@ public class UnitAddress {
     @DisplayName("주소 생성 성공 - 기본 배송지 없는데 첫 주소는 아닐 때")
     void createAddress_success2() {
         // given
-        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
         given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(null);
-        given(addressRepository.countByUser(testUser)).willReturn(1L);
-
+        given(addressRepository.countByUserId(testUser.getId())).willReturn(1L);
+        given(userRepository.existsById(testUser.getId())).willReturn(true);
+        given(userRepository.getReferenceById(testUser.getId())).willReturn(testUser);
+        
         // when
         AddressResponse response = addressService.createAddress(testUser.getId(),
                 new AddressRequest("address2", "detailStreet2", "zipcode", false));
@@ -81,9 +82,10 @@ public class UnitAddress {
     @DisplayName("주소 생성 성공 - 기본 배송지 없는데 첫 주소일 때")
     void createAddress_success3() {
         // given
-        given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
         given(addressRepository.findByUserIdAndDefaultAddressTrue(testUser.getId())).willReturn(null);
-        given(addressRepository.countByUser(testUser)).willReturn(0L);
+        given(addressRepository.countByUserId(testUser.getId())).willReturn(0L);
+        given(userRepository.existsById(testUser.getId())).willReturn(true);
+        given(userRepository.getReferenceById(testUser.getId())).willReturn(testUser);
 
         // when
         AddressResponse response = addressService.createAddress(testUser.getId(),

@@ -66,9 +66,10 @@ public class UnitCouponPublishScheduler {
         // given
         Coupon testBirthCoupon = Coupon.createCoupon(
                 new CouponRequest("생일쿠폰", BigDecimal.valueOf(1000), LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1), 90));
-        given(userRepository.findAllByBirthToday()).willReturn(List.of(testUser));
+        given(userRepository.findUserIdsByBirthToday()).willReturn(List.of(testUser.getId()));
         given(couponRepository.findByName("생일쿠폰")).willReturn(Optional.of(testBirthCoupon));
-        given(couponPublishRepository.existsByUserAndCoupon(testUser, testBirthCoupon)).willReturn(false);
+        given(couponPublishRepository.existsByUserIdAndCouponId(testUser.getId(), testBirthCoupon.getId())).willReturn(false);
+        given(userRepository.getReferenceById(testUser.getId())).willReturn(testUser);
 
         // when
         scheduler.publishBirthdayCoupons();
