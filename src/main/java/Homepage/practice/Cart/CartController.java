@@ -52,7 +52,7 @@ public class CartController {
     }
 
     @DeleteMapping("/user/cart/deleteItems")
-    @Operation(summary = "장바구니 안 아이템 삭제하기")
+    @Operation(summary = "장바구니 안 특정 아이템 삭제하기")
     public ResponseEntity<GlobalApiResponse<CartResponse>> deleteItems(@AuthenticationPrincipal User user,
                                                                        @Valid @RequestBody CartItemListRequest request) {
         CartResponse response = cartService.deleteItems(user, request.getCartItemIds());
