@@ -30,18 +30,18 @@ spring:
   # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련
   jpa:
     hibernate:
-      ddl-auto: create-drop       # 테스트 시 매번 스키마 초기화
+      ddl-auto: create-drop
     properties:
       hibernate:
-        format_sql: true          # SQL 포맷
+        format_sql: true                    # SQL 포맷
         use_sql_comments: true
-        highlight_sql: true       # 가독성 (컬러)
+        highlight_sql: true                 # 가독성 (컬러)
     show-sql: true
     database: mysql
 
 # 출력 창에 나타날 출력 코드에 대한 포맷
 logging.level:
-  root: info                              # 전체 기본 레벨
-  org.hibernate.SQL: debug                # sql 로그
-  org.springframework.security: debug     # 인증/인가 요청
+  root: info                                               # 전체 기본 레벨
+  org.hibernate.SQL: debug                      # sql 로그
+  org.springframework.security: debug    # 인증/인가 요청
   org.springframework.web: debug          # web 요청
