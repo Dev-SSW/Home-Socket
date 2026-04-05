@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 모든 쿠폰 조회 부하 테스트
 export let options = {
@@ -29,12 +30,12 @@ function adminLogin() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;
-      console.log('관리자 로그인 성공, JWT 토큰 발급됨');
+      log('info', '관리자 로그인 성공, JWT 토큰 발급됨');
       return true;
     }
   }
   
-  console.log('관리자 로그인 실패:', loginResponse.body);
+  log('error', '관리자 로그인 실패: ' + loginResponse.body);
   return false;
 }
 
@@ -42,7 +43,7 @@ export default function () {
   // JWT 토큰이 없으면 관리자 로그인 시도
   if (!jwtToken) {
     if (!adminLogin()) {
-      console.log('관리자 로그인 실패로 테스트 중단');
+      log('error', '관리자 로그인 실패로 테스트 중단');
       return;
     }
   }
@@ -55,7 +56,7 @@ export default function () {
     },
   });
   
-  console.log('모든 쿠폰 응답 상태:', response.status);
+  log('debug', '모든 쿠폰 응답 상태: ' + response.status);
   
   // 응답 검증
   check(response, {

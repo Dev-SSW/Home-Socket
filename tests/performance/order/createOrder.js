@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 장바구니로 주문 생성 부하 테스트
 export let options = {
@@ -41,12 +42,12 @@ function login() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;
-      console.log(`로그인 성공: ${currentUser.username}, JWT 토큰 발급됨`);
+      log('info', `로그인 성공: ${currentUser.username}, JWT 토큰 발급됨`);
       return true;
     }
   }
   
-  console.log(`로그인 실패: ${currentUser.username}`, loginResponse.body);
+  log('error', `로그인 실패: ${currentUser.username}, ` + loginResponse.body);
   return false;
 }
 
@@ -69,13 +70,13 @@ export default function () {
     const cartBody = JSON.parse(cartResponse.body);
     if (cartBody.success && cartBody.data && cartBody.data.cartItems) {
       cartItemIds = cartBody.data.cartItems.map(item => item.id);
-      console.log(`${currentUser.username}의 장바구니 아이템 IDs:`, cartItemIds);
+      log('debug', `${currentUser.username}의 장바구니 아이템 IDs: ` + cartItemIds);
     }
   }
   
   // 장바구니에 아이템이 없으면 새 아이템 추가
   if (cartItemIds.length === 0) {
-    console.log(`${currentUser.username}의 장바구니가 비어있어 새 아이템 추가`);
+    log('info', `${currentUser.username}의 장바구니가 비어있어 새 아이템 추가`);
     addTestItems();
     return;
   }
@@ -87,7 +88,7 @@ export default function () {
     couponPublishId: null                       // 쿠폰 사용하지 않음
   };
   
-  console.log(`${currentUser.username}의 주문 요청 데이터:`, JSON.stringify(orderRequest));
+  log('debug', `${currentUser.username}의 주문 요청 데이터: ` + JSON.stringify(orderRequest));
   
   // 주문 생성 API 호출
   let response = http.post('http://localhost:8081/user/order/createCartOrder', JSON.stringify(orderRequest), {
@@ -97,8 +98,8 @@ export default function () {
     },
   });
   
-  console.log(`${currentUser.username}의 주문 생성 응답 상태:`, response.status);
-  console.log(`${currentUser.username}의 주문 생성 응답 본문:`, response.body);
+  log('debug', `${currentUser.username}의 주문 생성 응답 상태: ` + response.status);
+  log('debug', `${currentUser.username}의 주문 생성 응답 본문: ` + response.body);
   
   // 응답 검증
   check(response, {
@@ -130,7 +131,7 @@ function addTestItems() {
     });
 
     if (addItemResponse.status === 200) {
-      console.log(`${currentUser.username} 장바구니 아이템 추가 성공 (itemId: ${itemId})`);
+      log('debug', `${currentUser.username} 장바구니 아이템 추가 성공 (itemId: ${itemId})`);
     }
   }
 }

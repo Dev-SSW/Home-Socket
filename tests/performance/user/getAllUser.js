@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 전체 유저 정보 조회 부하 테스트 (관리자용)
 export let options = {
@@ -35,12 +36,12 @@ function login() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;
-      console.log('관리자 로그인 성공, JWT 토큰 발급됨');
+      log('info', '관리자 로그인 성공, JWT 토큰 발급됨');
       return true;
     }
   }
   
-  console.log('관리자 로그인 실패:', loginResponse.body);
+  log('error', '관리자 로그인 실패: ' + loginResponse.body);
   return false;
 }
 
@@ -60,8 +61,8 @@ export default function () {
     },
   });
   
-  console.log('전체 유저 응답 상태:', response.status);
-  console.log('전체 유저 응답 본문:', response.body);
+  log('debug', '전체 유저 응답 상태: ' + response.status);
+  log('debug', '전체 유저 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {

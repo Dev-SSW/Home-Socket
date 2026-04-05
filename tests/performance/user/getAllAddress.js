@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 주소 전체 조회 부하 테스트
 export let options = {
@@ -35,12 +36,12 @@ function login() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;  // "token" 필드로 수정
-      console.log('로그인 성공, JWT 토큰 발급됨');
+      log('info', '로그인 성공, JWT 토큰 발급됨');
       return true;
     }
   }
   
-  console.log('로그인 실패:', loginResponse.body);
+  log('error', '로그인 실패: ' + loginResponse.body);
   return false;
 }
 

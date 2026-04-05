@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 유저의 쿠폰 조회 부하 테스트
 export let options = {
@@ -35,12 +36,12 @@ function login() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;
-      console.log('로그인 성공, JWT 토큰 발급됨');
+      log('info', '로그인 성공, JWT 토큰 발급됨');
       return true;
     }
   }
   
-  console.log('로그인 실패:', loginResponse.body);
+  log('error', '로그인 실패: ' + loginResponse.body);
   return false;
 }
 
@@ -60,8 +61,8 @@ export default function () {
     },
   });
   
-  console.log('유저 쿠폰 응답 상태:', response.status);
-  console.log('유저 쿠폰 응답 본문:', response.body);
+  log('debug', '유저 쿠폰 응답 상태: ' + response.status);
+  log('debug', '유저 쿠폰 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {
