@@ -1,4 +1,4 @@
-# application-test.yml
+# application-performance.yml
 # Server Port 번호
 server:
   port: 8081
@@ -22,15 +22,15 @@ spring:
 
   # DB 설정
   datasource:
-    url: ${SPRING_DATASOURCE_URL2}
-    username: ${SPRING_DATASOURCE_USERNAME2}
-    password: ${SPRING_DATASOURCE_PASSWORD2}
+    url: ${SPRING_DATASOURCE_URL3}
+    username: ${SPRING_DATASOURCE_USERNAME3}
+    password: ${SPRING_DATASOURCE_PASSWORD3}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true                    # SQL 포맷
@@ -38,6 +38,12 @@ spring:
         highlight_sql: true                 # 가독성 (컬러)
     show-sql: true
     database: mysql
+
+  flyway:
+    enabled: true
+    validate-on-migrate: false
+    locations:
+      - classpath:db/migration
 
 # 출력 창에 나타날 출력 코드에 대한 포맷
 logging.level:

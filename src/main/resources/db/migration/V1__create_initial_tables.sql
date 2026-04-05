@@ -82,7 +82,7 @@ CREATE TABLE delivery (
     order_id BIGINT NOT NULL,
     address_id BIGINT NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (address_id) REFERENCES address(Address_id)
+    FOREIGN KEY (address_id) REFERENCES address(address_id)
 );
 
 CREATE TABLE cart (
