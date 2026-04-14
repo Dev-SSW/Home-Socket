@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 카테고리별 상품 조회 부하 테스트
 export let options = {
@@ -22,8 +23,8 @@ export default function () {
     },
   });
   
-  console.log('카테고리 상품 응답 상태:', response.status);
-  console.log('카테고리 상품 응답 본문:', response.body);
+  log('debug', '카테고리 상품 응답 상태: ' + response.status);
+  log('debug', '카테고리 상품 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {

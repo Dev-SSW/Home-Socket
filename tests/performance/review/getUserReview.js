@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 유저 리뷰 전체 조회 부하 테스트
 export let options = {
@@ -46,12 +47,12 @@ function login(userIndex) {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtTokens[userIndex] = responseBody.data.token;
-      console.log(`로그인 성공: ${user.username}, JWT 토큰 발급됨`);
+      log('info', `로그인 성공: ${user.username}, JWT 토큰 발급됨`);
       return true;
     }
   }
   
-  console.log(`로그인 실패: ${user.username}`, loginResponse.body);
+  log('error', `로그인 실패: ${user.username}, ` + loginResponse.body);
   return false;
 }
 
@@ -62,7 +63,7 @@ export default function () {
   // JWT 토큰이 없으면 로그인 시도
   if (!jwtTokens[userIndex]) {
     if (!login(userIndex)) {
-      console.log(`user${userIndex + 1}: 로그인 실패로 테스트 중단`);
+      log('error', `user${userIndex + 1}: 로그인 실패로 테스트 중단`);
       return;
     }
   }
@@ -75,8 +76,8 @@ export default function () {
     },
   });
   
-  console.log('유저 리뷰 응답 상태:', response.status);
-  console.log('유저 리뷰 응답 본문:', response.body);
+  log('debug', '유저 리뷰 응답 상태: ' + response.status);
+  log('debug', '유저 리뷰 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {

@@ -8,6 +8,11 @@ build/
 .env*
 *.pem
 
+### Performance Test Results ###
+tests/performance/results/
+tests/performance/*.bat
+*.json
+
 ### STS ###
 .apt_generated
 .classpath

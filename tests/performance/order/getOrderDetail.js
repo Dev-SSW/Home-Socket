@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 주문 상세 조회 부하 테스트
 export let options = {
@@ -35,12 +36,12 @@ function login() {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtToken = responseBody.data.token;
-      console.log('로그인 성공, JWT 토큰 발급됨');
+      log('info', '로그인 성공, JWT 토큰 발급됨');
       return true;
     }
   }
   
-  console.log('로그인 실패:', loginResponse.body);
+  log('error', '로그인 실패: ' + loginResponse.body);
   return false;
 }
 
@@ -63,8 +64,9 @@ export default function () {
     },
   });
   
-  console.log('주문 상세 응답 상태:', response.status);
-  console.log('주문 상세 응답 본문:', response.body);
+  // 성능 테스트 시에는 로그 비활성화
+  log('debug', '주문 상세 응답 상태: ' + response.status);
+  log('debug', '주문 상세 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {
@@ -76,11 +78,11 @@ export default function () {
     '404 response contains error data': (r) => r.status === 404 && r.body.includes('ORDER_NOT_FOUND'),
   });
   
-  // 상태 코드별 카운트
+  // 상태 코드별 카운트 (성능 테스트 시에는 최소 로그)
   if (response.status === 200) {
-    console.log(`200 성공 - orderId: ${orderId}`);
+    log('info', `200 성공 - orderId: ${orderId}`);
   } else if (response.status === 404) {
-    console.log(`404 주문 없음 - orderId: ${orderId}`);
+    log('info', `404 주문 없음 - orderId: ${orderId}`);
   }
   
   // 1초 대기

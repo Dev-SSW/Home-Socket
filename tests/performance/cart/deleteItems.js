@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { CONFIG, log } from '../config.js';
 
 // 장바구니 아이템 삭제 부하 테스트 (순수 삭제 성능)
 export let options = {
@@ -40,12 +41,12 @@ function login(userIndex) {
     const responseBody = JSON.parse(loginResponse.body);
     if (responseBody.success && responseBody.data) {
       jwtTokens[userIndex] = responseBody.data.token;
-      console.log(`로그인 성공: ${user.username}, JWT 토큰 발급됨`);
+      log('info', `로그인 성공: ${user.username}, JWT 토큰 발급됨`);
       return true;
     }
   }
   
-  console.log(`로그인 실패: ${user.username}`, loginResponse.body);
+  log('error', `로그인 실패: ${user.username}, ` + loginResponse.body);
   return false;
 }
 
@@ -56,7 +57,7 @@ export default function () {
   // JWT 토큰이 없으면 로그인 시도
   if (!jwtTokens[userIndex]) {
     if (!login(userIndex)) {
-      console.log(`user${userIndex + 1}: 로그인 실패로 테스트 중단`);
+      log('error', `user${userIndex + 1}: 로그인 실패로 테스트 중단`);
       return;
     }
   }
@@ -69,14 +70,14 @@ export default function () {
   });
 
   if (cartResponse.status !== 200) {
-    console.log(`user${userIndex + 1}: 장바구니 조회 실패 (${cartResponse.status})`);
+    log('error', `user${userIndex + 1}: 장바구니 조회 실패 (${cartResponse.status})`);
     return;
   }
 
   const cartData = JSON.parse(cartResponse.body);
   if (!cartData.success || !cartData.data || !cartData.data.cartItemList || cartData.data.cartItemList.length === 0) {
     // 장바구니가 비어있으면 새 아이템 추가
-    console.log(`user${userIndex + 1}: 장바구니가 비어있어 새 아이템 추가`);
+    log('info', `user${userIndex + 1}: 장바구니가 비어있어 새 아이템 추가`);
     addTestItems(userIndex);
     return; // 다음 반복에서 삭제 시도
   }
@@ -85,7 +86,7 @@ export default function () {
   const deleteCount = Math.min(Math.floor(Math.random() * 2) + 1, currentItems.length);
   const itemsToDelete = currentItems.slice(0, deleteCount).map(item => item.id);
 
-  console.log(`user${userIndex + 1}: 삭제할 아이템 ID: [${itemsToDelete.join(', ')}]`);
+  log('debug', `user${userIndex + 1}: 삭제할 아이템 ID: [${itemsToDelete.join(', ')}]`);
 
   // 장바구니 아이템 삭제 요청 데이터
   const deleteRequest = {
@@ -112,11 +113,11 @@ export default function () {
   
   // 상태 코드별 카운트
   if (response.status === 200) {
-    console.log(`200 삭제 성공 - user${userIndex + 1}: 아이템 [${itemsToDelete.join(', ')}]`);
+    log('info', `200 삭제 성공 - user${userIndex + 1}: 아이템 [${itemsToDelete.join(', ')}]`);
   } else if (response.status === 204) {
-    console.log(`204 삭제 성공 (No Content) - user${userIndex + 1}: 아이템 [${itemsToDelete.join(', ')}]`);
+    log('info', `204 삭제 성공 (No Content) - user${userIndex + 1}: 아이템 [${itemsToDelete.join(', ')}]`);
   } else {
-    console.log(`기타 응답 - user${userIndex + 1}: 상태 ${response.status}, 본문: ${response.body}`);
+    log('error', `기타 응답 - user${userIndex + 1}: 상태 ${response.status}, 본문: ${response.body}`);
   }
 
   // 0.5초 대기 (순수 삭제 테스트를 위해 대기 시간 단축)
@@ -141,14 +142,14 @@ function addTestItems(userIndex) {
     });
 
     if (addItemResponse.status === 200) {
-      console.log(`user${userIndex + 1} 장바구니 아이템 추가 성공 (itemId: ${itemId})`);
+      log('debug', `user${userIndex + 1} 장바구니 아이템 추가 성공 (itemId: ${itemId})`);
     }
   }
 }
 
 // 테스트 후 정리
 export function teardown(data) {
-  console.log('=== 테스트 정리 시작 ===');
+  log('info', '=== 테스트 정리 시작 ===');
   // 필요시 추가 정리 로직 구현
-  console.log('=== 테스트 정리 완료 ===');
+  log('info', '=== 테스트 정리 완료 ===');
 }
