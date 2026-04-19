@@ -167,8 +167,9 @@ public class TestDataGenerator implements CommandLineRunner {
         }
         
         jdbcTemplate.batchUpdate(
-            "INSERT INTO user (username, password, birth, name, role, token_version) VALUES (?, ?, ?, ?, ?, ?)",
-            users
+            //"INSERT INTO user (username, password, birth, name, role, token_version) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO \"user\" (username, password, birth, name, role, token_version) VALUES (?, ?, ?, ?, ?, ?)",
+                users
         );
     }
 
@@ -324,7 +325,8 @@ public class TestDataGenerator implements CommandLineRunner {
             // 해당 사용자에게 발급된 쿠폰만 사용 가능
             Long couponPublishId = null;
             try {
-                String couponSql = "SELECT coupon_publish_id FROM coupon_publish WHERE user_id = ? AND status = 'AVAILABLE' ORDER BY RAND() LIMIT 1";
+                //String couponSql = "SELECT coupon_publish_id FROM coupon_publish WHERE user_id = ? AND status = 'AVAILABLE' ORDER BY RAND() LIMIT 1";
+                String couponSql = "SELECT coupon_publish_id FROM coupon_publish WHERE user_id = ? AND status = 'AVAILABLE' ORDER BY RANDOM() LIMIT 1";
                 couponPublishId = jdbcTemplate.queryForObject(couponSql, Long.class, userId);
             } catch (Exception e) {
                 // 쿠폰이 없으면 null 유지
@@ -418,7 +420,8 @@ public class TestDataGenerator implements CommandLineRunner {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         
         // 쿠폰 정보 조회하여 유효기간 기반으로 생성
-        String couponSql = "SELECT coupon_id, valid_start, valid_end, after_issue FROM coupon ORDER BY RAND() LIMIT ?";
+        //String couponSql = "SELECT coupon_id, valid_start, valid_end, after_issue FROM coupon ORDER BY RAND() LIMIT ?";
+        String couponSql = "SELECT coupon_id, valid_start, valid_end, after_issue FROM coupon ORDER BY RANDOM() LIMIT ?";
         List<CouponInfo> coupons = jdbcTemplate.query(couponSql, new Object[]{count}, (rs, rowNum) -> {
             CouponInfo coupon = new CouponInfo();
             coupon.id = rs.getLong("coupon_id");

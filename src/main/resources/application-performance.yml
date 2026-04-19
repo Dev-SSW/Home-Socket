@@ -25,7 +25,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL3}
     username: ${SPRING_DATASOURCE_USERNAME3}
     password: ${SPRING_DATASOURCE_PASSWORD3}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
 
   # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련
   jpa:
@@ -36,14 +36,16 @@ spring:
         format_sql: true                    # SQL 포맷
         use_sql_comments: true
         highlight_sql: true                 # 가독성 (컬러)
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        globally_quoted_identifiers: true   # 테이블/컬럼명 자동 인용
     show-sql: true
-    database: mysql
+    database: postgresql
 
   flyway:
     enabled: true
     validate-on-migrate: false
     locations:
-      - classpath:db/migration
+      - classpath:db/migration/PostgreSQL
 
 # 출력 창에 나타날 출력 코드에 대한 포맷
 logging.level:
