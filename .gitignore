@@ -9,7 +9,7 @@ build/
 *.pem
 
 ### Performance Test Results ###
-tests/performance/results/
+tests/performance/results*/
 tests/performance/*.bat
 *.json
 
