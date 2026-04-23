@@ -1,13 +1,9 @@
 package Homepage.practice.Performance;
 
 import Homepage.practice.*;
-import Homepage.practice.Cart.CartRepository;
-import Homepage.practice.CartItem.CartItemRepository;
 import Homepage.practice.Category.Category;
 import Homepage.practice.Category.CategoryRepository;
 import Homepage.practice.Category.DTO.CategoryRequest;
-import Homepage.practice.Item.ItemRepository;
-import Homepage.practice.Review.ReviewRepository;
 import Homepage.practice.CouponPublish.CouponPublishStatus;
 import Homepage.practice.User.Role;
 import Homepage.practice.User.UserRepository;
@@ -24,36 +20,46 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-@Profile("performance")  // performance 프로필에서만 활성화
+@Profile("performance")
 public class TestDataGenerator implements CommandLineRunner {
 
     @Autowired private UserRepository userRepository;
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ItemRepository itemRepository;
-    @Autowired private ReviewRepository reviewRepository;
-    @Autowired private CartRepository cartRepository;
-    @Autowired private CartItemRepository cartItemRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        if (shouldGenerateData()) {
-            generateLargeDataset();
+        try {
+            if (shouldGenerateData()) {
+                generateLargeDataset();
+                System.out.println("모든 테스트 데이터 생성 완료");
+            } else {
+                System.out.println("이미 충분한 데이터가 존재합니다");
+            }
+        } catch (Exception e) {
+            System.err.println("데이터 생성 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
     private boolean shouldGenerateData() {
-        // 이미 대량 데이터가 있으면 건너뛰기
-        long currentCount = userRepository.count();
-        System.out.println("현재 데이터 개수: " + currentCount);
-        
-        if (currentCount < 1000) {
-            System.out.println("데이터가 1000개 미만이라 새로 생성합니다.");
-            return true;
-        } else {
-            System.out.println("이미 대량 데이터가 있어 건너뜁니다.");
+        try {
+            // 이미 대량 데이터가 있으면 건너뛰기
+            long currentCount = userRepository.count();
+            System.out.println("현재 사용자 데이터 개수: " + currentCount);
+            
+            if (currentCount < 1000) {
+                System.out.println("데이터가 1000개 미만이라 새로 생성합니다.");
+                return true;
+            } else {
+                System.out.println("이미 대량 데이터가 있어 건너뜁니다.");
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("데이터 확인 중 오류: " + e.getMessage());
             return false;
         }
     }
@@ -61,37 +67,31 @@ public class TestDataGenerator implements CommandLineRunner {
     public void generateLargeDataset() {
         System.out.println("대량 테스트 데이터 생성 시작");
         
-        // 계층적 카테고리 27개 생성 (3x3x3 구조)
-        List<Category> categories = createHierarchicalCategories(3, 3);
-        
-        // 벌크 INSERT로 쿠폰 100개 생성
-        bulkInsertCoupons(100);
-        
-        // 3. 벌크 INSERT로 사용자 10,000명 생성
-        bulkInsertUsers(10000);
-        
-        // 3. 벌크 INSERT로 아이템 1,000개 생성
-        bulkInsertItems(1000, categories);
-        
-        // 벌크 INSERT로 리뷰 50,000개 생성
-        bulkInsertReviews(50000);
-        
-        // 리뷰 생성 후 Item avgStar 일괄 계산
-        updateItemAvgStars();
-        
-        // 벌크 INSERT로 장바구니 10,000개 생성 (모든 사용자)
-        bulkInsertCarts(10000);
-        
-        // 벌크 INSERT로 주소 15,000개 생성 (사용자당 1.5개)
-        Map<Long, List<Long>> userAddressMap = bulkInsertAddresses(15000);
-        
-        // 벌크 INSERT로 쿠폰 발급 8,000개 생성
-        bulkInsertCouponPublishes(8000);
-        
-        // 벌크 INSERT로 주문 2,000개 생성
-        bulkInsertOrders(2000, userAddressMap);
-        
-        System.out.println("대량 테스트 데이터 생성 완료");
+        try {
+            // 기본 데이터 생성 (의존성 없는 것들)
+            System.out.println("기본 데이터 생성");
+            bulkInsertUsers(10000);                    // 사용자
+            List<Category> categories = createHierarchicalCategories(3, 3);  // 카테고리
+            bulkInsertCoupons(100);                    // 쿠폰
+            
+            // 의존성 있는 데이터 생성
+            System.out.println("의존성 데이터 생성");
+            bulkInsertItems(1000, categories);   // 아이템
+            Map<Long, List<Long>> userAddressMap = bulkInsertAddresses(15000);  // 주소
+            bulkInsertCarts(10000);                   // 장바구니
+            bulkInsertCartItems();                      // 장바구니 아이템
+            
+            // 복합 데이터 생성
+            System.out.println("복합 데이터 생성");
+            bulkInsertReviews(50000);                          // 리뷰
+            updateItemAvgStars();                                // 아이템 평점 계산
+            bulkInsertCouponPublishes(8000);             // 쿠폰 발급
+            bulkInsertOrders(2000, userAddressMap); // 주문
+            
+        } catch (Exception e) {
+            System.err.println("데이터 생성 실패: " + e.getMessage());
+            throw e;
+        }
     }
     
     private List<Category> createHierarchicalCategories(int depth, int breadth) {
@@ -167,7 +167,6 @@ public class TestDataGenerator implements CommandLineRunner {
         }
         
         jdbcTemplate.batchUpdate(
-            //"INSERT INTO user (username, password, birth, name, role, token_version) VALUES (?, ?, ?, ?, ?, ?)",
                 "INSERT INTO \"user\" (username, password, birth, name, role, token_version) VALUES (?, ?, ?, ?, ?, ?)",
                 users
         );
@@ -235,37 +234,42 @@ public class TestDataGenerator implements CommandLineRunner {
         );
         
         // 생성된 장바구니 ID를 가져와서 장바구니 아이템 생성
-        bulkInsertCartItems(count);
+        bulkInsertCartItems();
     }
 
-    private void bulkInsertCartItems(int cartCount) {
+    private void bulkInsertCartItems() {
         System.out.println("장바구니 아이템 벌크 생성");
         
-        List<Object[]> cartItems = new ArrayList<>();
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        
-        // 생성된 장바구니 ID를 가져와서 아이템 생성
-        String sql = "SELECT cart_id FROM cart ORDER BY cart_id LIMIT ?";
-        List<Long> cartIds = jdbcTemplate.queryForList(sql, Long.class, cartCount);
-        
-        // 각 장바구니당 1-5개 아이템 생성
-        for (int i = 0; i < cartIds.size(); i++) {
-            Long cartId = cartIds.get(i);
-            int itemCount = random.nextInt(5) + 1; // 1-5개 아이템
+        try {
+            List<Object[]> cartItems = new ArrayList<>();
+            ThreadLocalRandom random = ThreadLocalRandom.current();
             
-            for (int j = 0; j < itemCount; j++) {
-                cartItems.add(new Object[]{
-                    cartId,                                         // 실제 cart_id
-                    random.nextLong(1, 1000),         // item_id
-                    random.nextInt(10) + 1               // quantity
-                });
+            // 실제 생성된 장바구니 ID와 아이템 ID 범위 조회
+            List<Long> cartIds = jdbcTemplate.queryForList("SELECT cart_id FROM cart ORDER BY cart_id", Long.class);
+            Long maxItemId = jdbcTemplate.queryForObject("SELECT MAX(item_id) FROM item", Long.class);
+            
+            // 각 장바구니당 1-5개 아이템 생성
+            for (Long cartId : cartIds) {
+                int itemCount = random.nextInt(5) + 1;   // 1-5개 아이템
+                
+                for (int j = 0; j < itemCount; j++) {
+                    cartItems.add(new Object[]{
+                        cartId,                                                 // 실제 cart_id
+                        random.nextLong(1, maxItemId + 1),   // 실제 아이템 ID 범위
+                        random.nextInt(10) + 1                       // quantity
+                    });
+                }
             }
+            
+            jdbcTemplate.batchUpdate(
+                "INSERT INTO cart_item (cart_id, item_id, quantity) VALUES (?, ?, ?)",
+                cartItems
+            );
+            System.out.println("장바구니 아이템 " + cartItems.size() + "개 생성 완료");
+        } catch (Exception e) {
+            System.err.println("장바구니 아이템 생성 실패: " + e.getMessage());
+            throw e;
         }
-        
-        jdbcTemplate.batchUpdate(
-            "INSERT INTO cart_item (cart_id, item_id, quantity) VALUES (?, ?, ?)",
-            cartItems
-        );
     }
     
     private Map<Long, List<Long>> bulkInsertAddresses(int count) {
@@ -325,7 +329,6 @@ public class TestDataGenerator implements CommandLineRunner {
             // 해당 사용자에게 발급된 쿠폰만 사용 가능
             Long couponPublishId = null;
             try {
-                //String couponSql = "SELECT coupon_publish_id FROM coupon_publish WHERE user_id = ? AND status = 'AVAILABLE' ORDER BY RAND() LIMIT 1";
                 String couponSql = "SELECT coupon_publish_id FROM coupon_publish WHERE user_id = ? AND status = 'AVAILABLE' ORDER BY RANDOM() LIMIT 1";
                 couponPublishId = jdbcTemplate.queryForObject(couponSql, Long.class, userId);
             } catch (Exception e) {
@@ -420,7 +423,6 @@ public class TestDataGenerator implements CommandLineRunner {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         
         // 쿠폰 정보 조회하여 유효기간 기반으로 생성
-        //String couponSql = "SELECT coupon_id, valid_start, valid_end, after_issue FROM coupon ORDER BY RAND() LIMIT ?";
         String couponSql = "SELECT coupon_id, valid_start, valid_end, after_issue FROM coupon ORDER BY RANDOM() LIMIT ?";
         List<CouponInfo> coupons = jdbcTemplate.query(couponSql, new Object[]{count}, (rs, rowNum) -> {
             CouponInfo coupon = new CouponInfo();
