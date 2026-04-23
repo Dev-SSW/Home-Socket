@@ -53,7 +53,7 @@ class UnitCart {
     void getCart_success1() {
         // given
         given(userRepository.findByUsername(testUser.getUsername())).willReturn(Optional.of(testUser));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
 
         // when
         CartResponse response = cartService.getCart(testUser.getUsername());
@@ -67,7 +67,8 @@ class UnitCart {
     void getCart_success2() {
         // given
         given(userRepository.findByUsername(testUser.getUsername())).willReturn(Optional.of(testUser));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.empty());
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.empty());
+
         // save 시 객체를 생성하기에 지정해줘야 함
         given(cartRepository.save(any(Cart.class))).willReturn(testCart);
 
@@ -84,7 +85,7 @@ class UnitCart {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
         given(userRepository.findByUsername(testUser.getUsername())).willReturn(Optional.of(testUser));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
         given(itemRepository.findById(testItem.getId())).willReturn(Optional.of(testItem));
         given(cartItemRepository.findByCartAndItem(testCart, testItem)).willReturn(Optional.of(testCartItem));
 
@@ -101,7 +102,7 @@ class UnitCart {
     void addItem_success2() {
         // given
         given(userRepository.findByUsername(testUser.getUsername())).willReturn(Optional.of(testUser));
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
         given(itemRepository.findById(testItem.getId())).willReturn(Optional.of(testItem));
 
         // when
@@ -117,6 +118,7 @@ class UnitCart {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
         given(cartItemRepository.findById(testCartItem.getId())).willReturn(Optional.of(testCartItem));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
 
         // when
         CartResponse response = cartService.updateItem(testUser, new CartItemUpdateRequest(testCartItem.getId(), 3));
@@ -131,6 +133,7 @@ class UnitCart {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
         given(cartItemRepository.findById(testCartItem.getId())).willReturn(Optional.of(testCartItem));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
 
         // when
         CartResponse response = cartService.deleteItem(testUser, testCartItem.getId());
@@ -144,7 +147,7 @@ class UnitCart {
     void deleteItems_success() {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
         given(cartItemRepository.findExistingIds(List.of(testCartItem.getId()), testUser.getId())).willReturn(List.of(testCartItem.getId()));
 
         // when
@@ -160,7 +163,7 @@ class UnitCart {
     void clearCart() {
         // given
         CartItem testCartItem = TestUnitInit.createCartItem(5L, testCart, testItem, 2);
-        given(cartRepository.findByUser(testUser)).willReturn(Optional.of(testCart));
+        given(cartRepository.findCartItemsWithItemByUserId(testUser.getId())).willReturn(Optional.of(testCart));
 
         // when
         CartResponse response = cartService.clearCart(testUser);
