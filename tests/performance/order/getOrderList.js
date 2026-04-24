@@ -1,77 +1,89 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { CONFIG, log } from '../config.js';
 
 // 주문 목록 조회 부하 테스트
 export let options = {
-  vus: 12,                                                              // 동시 사용자 12명
-  duration: '50s',                                                  // 50초 동안
+  vus: 8,                                                       // 동시 사용자 8명
+  duration: '30s',                                          // 30초 동안
   thresholds: {
-    http_req_duration: ['p(95)<800'],                    // 95%의 요청이 800ms 미만
-    http_req_failed: ['rate<0.05'],                          // 실패율 5% 미만
+    http_req_duration: ['p(95)<400'],            // 95%의 요청이 400ms 미만
+    http_req_failed: ['rate<0.02'],                  // 실패율 2% 미만
   },
 };
 
-// 테스트용 사용자 정보
-const TEST_USER = {
-  username: 'user1',
-  password: 'password123'
-};
+// 다중 사용자 테스트용 사용자 정보
+const TEST_USERS = [
+  { username: 'user1', password: 'password123' },
+  { username: 'user2', password: 'password123' },
+  { username: 'user3', password: 'password123' },
+  { username: 'user4', password: 'password123' },
+  { username: 'user5', password: 'password123' },
+  { username: 'user6', password: 'password123' },
+  { username: 'user7', password: 'password123' },
+  { username: 'user8', password: 'password123' }
+];
 
-// JWT 토큰 저장
-let jwtToken = null;
+// setup 함수: 테스트 시작 전에 한 번만 실행됨
+export function setup() {
+  console.log('=== 부하테스트 시작: 다중 사용자 로그인 ===');
 
-// 로그인 함수
-function login() {
-  const loginResponse = http.post('http://localhost:8081/public/login', JSON.stringify({
-    username: TEST_USER.username,
-    password: TEST_USER.password
-  }), {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  
-  if (loginResponse.status === 200) {
-    const responseBody = JSON.parse(loginResponse.body);
-    if (responseBody.success && responseBody.data) {
-      jwtToken = responseBody.data.token;
-      log('info', '로그인 성공, JWT 토큰 발급됨');
-      return true;
+  const userTokens = [];
+
+  // 각 테스트 사용자별로 로그인
+  for (let i = 0; i < TEST_USERS.length; i++) {
+    const user = TEST_USERS[i];
+
+    const loginResponse = http.post('http://localhost:8081/public/login', JSON.stringify({
+      username: user.username,
+      password: user.password
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (loginResponse.status !== 200) {
+      throw new Error(`사용자 ${user.username} 로그인 실패: ${loginResponse.status} - ${loginResponse.body}`);
     }
+
+    const responseBody = JSON.parse(loginResponse.body);
+    if (!responseBody.success || !responseBody.data || !responseBody.data.token) {
+      throw new Error(`사용자 ${user.username} JWT 토큰 발급 실패: ${loginResponse.body}`);
+    }
+
+    userTokens.push(responseBody.data.token);
+    console.log(`사용자 ${user.username} 로그인 성공`);
   }
-  
-  log('error', '로그인 실패: ' + loginResponse.body);
-  return false;
+
+  console.log(`총 ${userTokens.length}명의 사용자 로그인 완료`);
+  return {
+    userTokens: userTokens
+  };
 }
 
-export default function () {
-  // JWT 토큰이 없으면 로그인
-  if (!jwtToken) {
-    if (!login()) {
-      throw new Error('로그인 실패');
-    }
-  }
+// 메인 테스트 함수: 각 VU에서 반복 실행됨
+export default function (data) {
+  // 각 VU는 다른 사용자 토큰 사용 (VU ID 기반)
+  const vuIndex = __VU - 1; // VU는 1부터 시작, 배열은 0부터
+  const userToken = data.userTokens[vuIndex % data.userTokens.length];
+  const currentUser = TEST_USERS[vuIndex % TEST_USERS.length];
   
   // 주문 목록 조회 API 호출 (페이징)
   let response = http.get('http://localhost:8081/user/order/getOrderList?page=0&size=20', {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${jwtToken}`, // JWT 토큰 사용
+      'Authorization': `Bearer ${userToken}`,
     },
   });
-  
-  log('debug', '주문 목록 응답 상태: ' + response.status);
-  log('debug', '주문 목록 응답 본문: ' + response.body);
   
   // 응답 검증
   check(response, {
     'status is 200': (r) => r.status === 200,
-    'response time < 800ms': (r) => r.timings.duration < 800,
+    'response time < 400ms': (r) => r.timings.duration < 400,
     'response body is not empty': (r) => r.body.length > 0,
     'response contains order data': (r) => r.body.includes('orderId') || r.body.includes('orders') || r.body.includes('[]') || r.body.includes('null'),
   });
   
-  // 1.5초 대기
-  sleep(1.5);
+  // 0.5초 대기
+  sleep(0.5);
 }

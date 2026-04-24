@@ -182,7 +182,7 @@ public class TestDataGenerator implements CommandLineRunner {
             Category category = categories.get(random.nextInt(categories.size()));
             items.add(new Object[]{
                 "상품" + i,
-                random.nextInt(1000) + 1,
+                random.nextInt(10000) + 1,
                 (random.nextInt(100000) + 1000) * 10L,
                 0.0f,                                                           // avgStar (float)
                 category.getId()
