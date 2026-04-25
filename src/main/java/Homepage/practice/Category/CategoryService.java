@@ -48,7 +48,8 @@ public class CategoryService {
 
     /** 루트 카테고리 정보 가져오기 (계층별) */
     public List<CategoryHierarchyResponse> getRootCategory() {
-        List<CategoryHierarchyResponse> rootCategories = categoryRepository.findByDepth(0).stream()
+        List<CategoryHierarchyResponse> rootCategories =
+                categoryRepository.findRootCategoriesWithChildren().stream()
                 .map(CategoryHierarchyResponse::fromEntity)
                 .toList();
         

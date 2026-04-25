@@ -31,7 +31,8 @@ public class CartService {
     public CartResponse getCart(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        Cart cart = cartRepository.findByUser(user)
+        // Cart + CartItem + Item
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
                 .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
         return CartResponse.fromEntity(cart);
     }
@@ -41,8 +42,11 @@ public class CartService {
     public CartResponse addItem(String username, CartItemRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
-        Cart cart = cartRepository.findByUser(user)
+        
+        // 장바구니 조회
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
                 .orElseGet(() -> cartRepository.save(Cart.createCart(user)));
+        
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
 
@@ -69,7 +73,12 @@ public class CartService {
             throw new CartAccessDenied("본인 장바구니만 수정할 수 있습니다.");
         }
         cartItem.updateQuantity(request.getQuantity());
-        return CartResponse.fromEntity(cartItem.getCart());
+        
+        // DTO 변환 시 N+1 방지
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
+                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
+        
+        return CartResponse.fromEntity(cart);
     }
 
     /** 장바구니 안 아이템 삭제하기 */
@@ -77,21 +86,22 @@ public class CartService {
     public CartResponse deleteItem(User user, Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new CartItemNotFound("아이디에 해당하는 장바구니 아이템이 없습니다."));
-        Cart cart = cartItem.getCart();
         // 소유자 검증
-        if (!cart.getUser().getId().equals(user.getId())) {
+        if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
             throw new CartAccessDenied("본인 장바구니만 수정할 수 있습니다.");
         }
         cartItemRepository.delete(cartItem);
+        
+        // DTO 변환 시 N+1 방지
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
+                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
+        
         return CartResponse.fromEntity(cart);
     }
 
     /** 장바구니에서 특정 아이템들만 제거 */
     @Transactional
     public CartResponse deleteItems(User user, List<Long> cartItemIds) {
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
-
         // 먼저 존재하는 ID 목록 확인
         List<Long> existingIds = cartItemRepository.findExistingIds(cartItemIds, user.getId());
         
@@ -105,13 +115,19 @@ public class CartService {
         
         // 벌크 삭제 실행
         int deletedCount = cartItemRepository.deleteByIdsAndUserId(cartItemIds, user.getId());
+        
+        // DTO 변환 시 N+1 방지
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
+                .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
+        
         return CartResponse.fromEntity(cart);
     }
 
     /** 장바구니 비우기 */
     @Transactional
     public CartResponse clearCart(User user) {
-        Cart cart = cartRepository.findByUser(user)
+        // DTO 변환 시 N+1 방지
+        Cart cart = cartRepository.findCartItemsWithItemByUserId(user.getId())
                 .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
         cart.getCartItems().clear();
         return CartResponse.fromEntity(cart);

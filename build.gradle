@@ -34,6 +34,9 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	runtimeOnly 'org.flywaydb:flyway-mysql'																		//MySQL용
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'org.postgresql:postgresql'																		//PostgreSQL용
+	runtimeOnly 'org.flywaydb:flyway-core'
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql'												//PostgreSQL용 Flyway
 
 	// lombok
 	compileOnly 'org.projectlombok:lombok'
