@@ -9,9 +9,10 @@ build/
 *.pem
 
 ### Performance Test Results ###
-tests/performance/results*/
-tests/performance/*.bat
-*.json
+tests/results*/
+tests/reports*/
+tests/scripts/*.bat
+tests/scripts/*.txt
 
 ### STS ###
 .apt_generated
