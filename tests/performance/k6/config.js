@@ -24,7 +24,7 @@ export const COMMON_OPTIONS = {
   // 가상 사용자 수 설정, 기본 값은 8
   vus: Number(__ENV.VUS || 8),
   // 테스트 실행 시간
-  duration: __ENV.DURATION || '30s',
+  duration: __ENV.DURATION || '3m',
   // 공통 통과 기준 적용
   thresholds: COMMON_THRESHOLDS,
 };

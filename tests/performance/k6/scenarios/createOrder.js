@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { BASE_URL, COMMON_OPTIONS } from '../config.js';
+import { recordApiResult } from '../metrics.js';
 
 export const options = {
   // 공통 옵션을 펼쳐서 가져옴
@@ -146,6 +147,8 @@ export function createOrder(data) {
       tags: { api: 'createOrder', suite: 'write', migration: __ENV.MIGRATION_VERSION || 'local' },
     }
   );
+
+  recordApiResult('createOrder', response);
 
   check(response, {
     'status is 200 or 201': (r) => r.status === 200 || r.status === 201,

@@ -3,7 +3,7 @@ import path from 'path';
 
 // \s : 공백, + : 하나 이상, 공백으로 나누고 문자열을 배열로 바꿈
 // filter(Boolean) : 빈 값 제거
-const versions = (process.env.VERSIONS || 'v1 v2 v3 v4').split(/\s+/).filter(Boolean);    // 마이그레이션 버전
+const versions = (process.env.VERSIONS || 'v1 v2').split(/\s+/).filter(Boolean);    // 마이그레이션 버전
 const suites = (process.env.SUITES || 'read write').split(/\s+/).filter(Boolean);               // 테스트 종류
 const resultsRoot = process.env.RESULTS_ROOT || 'tests/results';                                // JSON 폴더 위치
 const reportsRoot = process.env.REPORTS_ROOT || 'tests/reports';                              // 보고서 저장 폴더 위치
@@ -24,6 +24,13 @@ function getValues(summary, metricName) {
 // API 이름 추출 ( tag로 붙인 이름을 통해 api 별 결과표를 만들기 위함 )
 function extractApiFromMetricName(name) {
   const match = name.match(/^http_req_duration\{api:([^}]+)\}$/);
+  return match ? match[1] : null;
+}
+
+// count 포함 추출
+function extractTaggedMetric(name, metricBaseName, tagName = 'api') {
+  const pattern = new RegExp(`^${metricBaseName}\\{${tagName}:([^,}]+)(?:,[^}]*)?\\}$`);
+  const match = name.match(pattern);
   return match ? match[1] : null;
 }
 
@@ -93,16 +100,34 @@ for (const version of versions) {
       checksRate: checks?.rate ?? null,
     });
 
+    const apiCounts = {};
+    const apiFailedCounts = {};
+
+    for (const [metricName, metric] of Object.entries(summary.metrics || {})) {
+      const countApi = extractTaggedMetric(metricName, 'api_count');
+      if (countApi) {
+        apiCounts[countApi] = metric.count ?? metric.values?.count ?? null;
+      }
+
+      const failedApi = extractTaggedMetric(metricName, 'api_failed_count');
+      if (failedApi) {
+        apiFailedCounts[failedApi] =
+          (apiFailedCounts[failedApi] || 0) + (metric.count ?? metric.values?.count ?? 0);
+      }
+    }
+
     // API별 결과 추출
     for (const [metricName, metric] of Object.entries(summary.metrics || {})) {
       const api = extractApiFromMetricName(metricName);
       if (!api) continue;
       const values = metric.values || metric || {};
+      const count = apiCounts[api] ?? values.count ?? null;
+      const failedCount = apiFailedCounts[api] ?? 0;
       apiRows.push({
         suite,
         version,
         api,
-        count: values.count ?? null,
+        count,
         rate: values.rate ?? null,
         iterations: null,
         avg: values.avg ?? null,
@@ -112,7 +137,8 @@ for (const version of versions) {
         p90: values['p(90)'] ?? null,
         p95: values['p(95)'] ?? null,
         p99: values['p(99)'] ?? null,
-        failedRate: null,
+        failedCount,
+        failedRate: count ? failedCount / count : null,
         checksRate: null,
       });
     }
@@ -125,7 +151,8 @@ fs.mkdirSync(reportsRoot, { recursive: true });
 const allRows = [...rows, ...apiRows];
 const csvHeader = [
   'suite', 'version', 'api', 'count', 'rate', 'iterations',
-  'avg', 'med', 'min', 'max', 'p90', 'p95', 'p99', 'failedRate', 'checksRate',
+  'avg', 'med', 'min', 'max', 'p90', 'p95', 'p99',
+  'failedCount', 'failedRate', 'checksRate',
 ];
 
 // CSV 헤더 설정
@@ -144,10 +171,10 @@ function markdownTable(title, tableRows) {
     return md;
   }
 
-  md += '| Suite | Version | API | Count | RPS | Avg | Med | P90 | P95 | P99 | Max | Failed | Checks |\n';
-  md += '|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n';
+  md += '| Suite | Version | API | Count | RPS | Avg | Med | P90 | P95 | P99 | Max | Failed Count | Failed Rate | Checks |\n';
+  md += '|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n';
   for (const r of tableRows) {
-    md += `| ${r.suite} | ${r.version.toUpperCase()} | ${r.api} | ${r.count ?? ''} | ${fmt(r.rate)} | ${fmt(r.avg)} | ${fmt(r.med)} | ${fmt(r.p90)} | ${fmt(r.p95)} | ${fmt(r.p99)} | ${fmt(r.max)} | ${pct(r.failedRate)} | ${pct(r.checksRate)} |\n`;
+    md += `| ${r.suite} | ${r.version.toUpperCase()} | ${r.api} | ${r.count ?? ''} | ${fmt(r.rate)} | ${fmt(r.avg)} | ${fmt(r.med)} | ${fmt(r.p90)} | ${fmt(r.p95)} | ${fmt(r.p99)} | ${fmt(r.max)} | ${r.failedCount ?? ''} | ${pct(r.failedRate)} | ${pct(r.checksRate)} |\n`;
   }
   return md;
 }

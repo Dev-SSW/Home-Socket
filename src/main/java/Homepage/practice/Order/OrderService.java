@@ -16,6 +16,7 @@ import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.Exception.*;
 import Homepage.practice.Order.DTO.*;
 import Homepage.practice.OrderItem.OrderItem;
+import Homepage.practice.OrderItem.OrderItemRepository;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class OrderService {
     private final CouponPublishRepository couponPublishRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
     private final CartService cartService;
 
 /*
@@ -110,9 +112,14 @@ public class OrderService {
 
     /** 주문 상세 페이지 */
     public OrderDetailResponse getOrderDetail(Long orderId) {
-        Order order = orderRepository.findOrderDetailById(orderId)
+        // 주문 기본 정보 조회 (배송지 포함)
+        Order order = orderRepository.findOrderWithDeliveryById(orderId)
                 .orElseThrow(() -> new OrderNotFound("아이디에 해당하는 주문이 없습니다."));
-        return OrderDetailResponse.fromEntity(order);
+        
+        // 주문 상품 목록 조회
+        List<OrderItem> orderItems = orderItemRepository.findWithItemByOrderId(orderId);
+        
+        return OrderDetailResponse.fromEntity(order, orderItems);
     }
 
     /** 주문 페이지 */

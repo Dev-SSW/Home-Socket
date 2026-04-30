@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { BASE_URL, COMMON_OPTIONS } from '../config.js';
+import { recordApiResult } from '../metrics.js';
 
 export const options = COMMON_OPTIONS;
 
@@ -12,6 +13,8 @@ export default function () {
       migration: __ENV.MIGRATION_VERSION || 'local',
     },
   });
+
+  recordApiResult('getRootCategory', response);
 
   check(response, {
     'status is 200': (r) => r.status === 200,

@@ -72,7 +72,7 @@ spring:
   # 출력 창에 나타낼 출력 코드에 대한 정렬 및 DB 생성 방법 관련
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true             # SQL 포맷

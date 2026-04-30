@@ -3,6 +3,7 @@ package Homepage.practice.Order.DTO;
 import Homepage.practice.Delivery.DTO.DeliveryResponse;
 import Homepage.practice.Order.Order;
 import Homepage.practice.OrderItem.DTO.OrderItemResponse;
+import Homepage.practice.OrderItem.OrderItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,13 +27,13 @@ public class OrderDetailResponse {
     private DeliveryResponse deliveryResponse;
     private List<OrderItemResponse> orderItemResponses;
 
-    public static OrderDetailResponse fromEntity(Order order) {
+    public static OrderDetailResponse fromEntity(Order order, List<OrderItem> orderItems) {
         return OrderDetailResponse.builder()
                 .id(order.getId())
                 .orderDate(order.getOrderDate())
                 .totalPrice(order.getTotalPrice())
                 .deliveryResponse(DeliveryResponse.fromEntity(order.getDelivery()))
-                .orderItemResponses(order.getOrderItems().stream()
+                .orderItemResponses(orderItems.stream()
                         .map(OrderItemResponse::fromEntity)
                         .collect(Collectors.toList()))
                 .build();
