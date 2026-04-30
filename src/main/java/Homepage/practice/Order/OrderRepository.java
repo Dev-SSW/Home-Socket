@@ -1,6 +1,7 @@
 package Homepage.practice.Order;
 
 import Homepage.practice.Order.DTO.OrderListResponse;
+import Homepage.practice.OrderItem.OrderItem;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,8 +18,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "from Order o join o.delivery d where o.user.id = :userId")
     List<OrderListResponse> findOrderListByUserId(@Param("userId") Long userId);
 
-    /** 상세 주문 내역 조회 */
-    @EntityGraph(attributePaths = {"delivery", "delivery.address", "orderItems", "orderItems.item"})
+    /** 주문 기본 정보 조회 (배송지 포함) */
+    @EntityGraph(attributePaths = {"delivery", "delivery.address"})
     @Query("select o from Order o where o.id = :orderId")
-    Optional<Order> findOrderDetailById(@Param("orderId") Long orderId);
+    Optional<Order> findOrderWithDeliveryById(@Param("orderId") Long orderId);
 }
