@@ -32,7 +32,7 @@ public class TestDataGenerator implements CommandLineRunner {
     private static final int ORDER_COUNT = 2000;
 
     /** CartItem 조회용 유저 */
-    private static final int WRITE_CART_ITEMS_PER_USER = 300;
+    private static final int WRITE_CART_ITEMS_PER_USER = 2000;
     private static final int CREATE_ORDER_USER_START_ID = 101;
     private static final int CREATE_ORDER_USER_END_ID = 108;
     private static final int DELETE_ITEMS_USER_START_ID = 201;

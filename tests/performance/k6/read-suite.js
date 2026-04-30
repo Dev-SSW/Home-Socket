@@ -31,6 +31,7 @@ function apiThresholds(apiNames) {
   for (const api of apiNames) {
     thresholds[`http_req_duration{api:${api}}`] = ['p(95)<400'];
     thresholds[`http_req_failed{api:${api}}`] = ['rate<0.02'];
+    thresholds[`api_count{api:${api}}`] = ['count>=100'];
   }
   return thresholds;
 }
