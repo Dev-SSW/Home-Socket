@@ -1,8 +1,8 @@
 CREATE TABLE "user" (
     user_id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    birth DATE NOT NULL,
+    password VARCHAR(255),
+    birth DATE,
     name VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
     token_version INT NOT NULL DEFAULT 1
