@@ -1,5 +1,6 @@
 package Homepage.practice.Item;
 
+import Homepage.practice.Common.DTO.PageResponse;
 import Homepage.practice.Exception.GlobalApiResponse;
 import Homepage.practice.Item.DTO.ItemRequest;
 import Homepage.practice.Item.DTO.ItemResponse;
@@ -9,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +31,8 @@ public class ItemController {
 
     @GetMapping("/public/item/getAllItem")
     @Operation(summary = "전체 상품 가져오기")
-    public ResponseEntity<GlobalApiResponse<Page<ItemResponse>>> getAllItem(Pageable pageable) {
-        Page<ItemResponse> responses = itemService.getAllItem(pageable);
+    public ResponseEntity<GlobalApiResponse<PageResponse<ItemResponse>>> getAllItem(Pageable pageable) {
+        PageResponse<ItemResponse> responses = itemService.getAllItem(pageable);
         return ResponseEntity.ok(GlobalApiResponse.success("전체 상품 가져오기 성공", responses));
     }
 
@@ -45,8 +45,8 @@ public class ItemController {
 
     @GetMapping("/public/item/getItemsByCategory/{categoryId}")
     @Operation(summary = "카테고리별 상품 조회하기")
-    public ResponseEntity<GlobalApiResponse<Page<ItemResponseCategory>>> getItemsByCategory(@PathVariable Long categoryId, Pageable pageable) {
-        Page<ItemResponseCategory> responses = itemService.getItemsByCategory(categoryId, pageable);
+    public ResponseEntity<GlobalApiResponse<PageResponse<ItemResponseCategory>>> getItemsByCategory(@PathVariable Long categoryId, Pageable pageable) {
+        PageResponse<ItemResponseCategory> responses = itemService.getItemsByCategory(categoryId, pageable);
         return ResponseEntity.ok(GlobalApiResponse.success("카테고리별 상품 조회 성공", responses));
     }
 
