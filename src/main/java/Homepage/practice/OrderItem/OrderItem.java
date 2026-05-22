@@ -39,8 +39,6 @@ public class OrderItem {
                 .item(item)
                 .quantity(quantity)
                 .build();
-        item.addOrderItem(orderItem);
-        return orderItem;
     }
 
     /** 비즈니스 로직 */
