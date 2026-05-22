@@ -1,12 +1,12 @@
 package Homepage.practice.Config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -20,6 +20,7 @@ import java.util.Map;
 
 @Configuration
 @EnableCaching
+@Profile("!test") // 통합테스트에서는 Redis 제외
 // Redis 저장소를 사용하도록 설정
 public class RedisCacheConfig {
     @Bean
@@ -77,7 +78,8 @@ public class RedisCacheConfig {
 
         return RedisCacheManager.builder(redisConnectionFactory)    // RedisConnectionFactory로 Redis 연결
                 .cacheDefaults(defaultConfig)                                          // 기본 캐시 정책은 defaultConfig 사용
-                .withInitialCacheConfigurations(cacheConfigurations)     //  특정 캐시 정책은 cacheConfigurations TTL 사용
+                .withInitialCacheConfigurations(cacheConfigurations)     // 특정 캐시 정책은 cacheConfigurations TTL 사용
+                .transactionAware()                                                         // DB 트랜잭션 성공 이후 캐시 무효화가 반영되도록
                 .build();
     }
 }
