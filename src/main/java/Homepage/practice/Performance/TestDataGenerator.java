@@ -32,7 +32,7 @@ public class TestDataGenerator implements CommandLineRunner {
     private static final int ORDER_COUNT = 2000;
 
     /** CartItem 조회용 유저 */
-    private static final int WRITE_CART_ITEMS_PER_USER = 2000;
+    private static final int WRITE_CART_ITEMS_PER_USER = 900;
     private static final int CREATE_ORDER_USER_START_ID = 101;
     private static final int CREATE_ORDER_USER_END_ID = 108;
     private static final int DELETE_ITEMS_USER_START_ID = 201;
@@ -319,20 +319,45 @@ public class TestDataGenerator implements CommandLineRunner {
         try {
             List<Object[]> cartItems = new ArrayList<>();
 
-            List<Long> cartIds = jdbcTemplate.queryForList("SELECT cart_id FROM cart ORDER BY cart_id", Long.class);
-            Long maxItemId = jdbcTemplate.queryForObject("SELECT MAX(item_id) FROM item", Long.class);
+            List<Map<String, Object>> carts = jdbcTemplate.queryForList(
+                    "SELECT cart_id, user_id FROM cart ORDER BY cart_id"
+            );
+
+            Long maxItemId = jdbcTemplate.queryForObject(
+                    "SELECT MAX(item_id) FROM item",
+                    Long.class
+            );
 
             if (maxItemId == null) {
                 throw new IllegalStateException("item 데이터가 없어 cart_item을 생성할 수 없습니다.");
             }
 
-            for (Long cartId : cartIds) {
+            for (Map<String, Object> row : carts) {
+                Long cartId = ((Number) row.get("cart_id")).longValue();
+                Long userId = ((Number) row.get("user_id")).longValue();
+
+                boolean isWriteTestUser =
+                        (userId >= CREATE_ORDER_USER_START_ID && userId <= CREATE_ORDER_USER_END_ID)
+                                || (userId >= DELETE_ITEMS_USER_START_ID && userId <= DELETE_ITEMS_USER_END_ID);
+
+                // write 테스트 유저는 bulkInsertWriteTestCartItems()에서 고정 생성
+                if (isWriteTestUser) {
+                    continue;
+                }
+
                 int itemCount = nextInt(1, 5);
+                Set<Long> usedItemIds = new HashSet<>();
 
                 for (int j = 0; j < itemCount; j++) {
+                    Long itemId;
+
+                    do {
+                        itemId = nextLong(1L, maxItemId);
+                    } while (!usedItemIds.add(itemId));
+
                     cartItems.add(new Object[]{
                             cartId,
-                            nextLong(1L, maxItemId),
+                            itemId,
                             nextInt(1, 10)
                     });
                 }
@@ -342,8 +367,9 @@ public class TestDataGenerator implements CommandLineRunner {
                     "INSERT INTO cart_item (cart_id, item_id, quantity) VALUES (?, ?, ?)",
                     cartItems
             );
+
             System.out.println("장바구니 아이템 " + cartItems.size() + "개 생성 완료");
-        } catch (Exception e) {
+            } catch (Exception e) {
             System.err.println("장바구니 아이템 생성 실패: " + e.getMessage());
             throw e;
         }
@@ -351,6 +377,13 @@ public class TestDataGenerator implements CommandLineRunner {
 
     private void bulkInsertWriteTestCartItems() {
         System.out.println("write 테스트 전용 장바구니 아이템 생성");
+
+        if (WRITE_CART_ITEMS_PER_USER > ITEM_COUNT) {
+            throw new IllegalStateException(
+                    "UNIQUE(cart_id, item_id) 제약조건 때문에 " +
+                            "WRITE_CART_ITEMS_PER_USER는 ITEM_COUNT를 초과할 수 없습니다."
+            );
+        }
 
         List<Object[]> cartItems = new ArrayList<>();
 
@@ -366,9 +399,11 @@ public class TestDataGenerator implements CommandLineRunner {
                     Long.class,
                     username
             );
-            // createOrder용 item_id: 181~480 반복
+
+            long base = ((userId - CREATE_ORDER_USER_START_ID) * 113L) % ITEM_COUNT;
+
             for (int i = 0; i < WRITE_CART_ITEMS_PER_USER; i++) {
-                long itemId = 181 + (i % 300);
+                long itemId = ((base + i) % ITEM_COUNT) + 1L;
 
                 cartItems.add(new Object[]{
                         cartId,
@@ -391,9 +426,10 @@ public class TestDataGenerator implements CommandLineRunner {
                     username
             );
 
-            // deleteItems용 item_id: 1~300 반복
+            long base = ((userId - DELETE_ITEMS_USER_START_ID) * 113L) % ITEM_COUNT;
+
             for (int i = 0; i < WRITE_CART_ITEMS_PER_USER; i++) {
-                long itemId = 1 + (i % 300);
+                long itemId = ((base + i) % ITEM_COUNT) + 1L;
 
                 cartItems.add(new Object[]{
                         cartId,
