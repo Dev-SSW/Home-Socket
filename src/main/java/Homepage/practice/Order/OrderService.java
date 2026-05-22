@@ -20,6 +20,7 @@ import Homepage.practice.OrderItem.OrderItemRepository;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +38,9 @@ public class OrderService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final CouponPublishRepository couponPublishRepository;
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
-    private final CartService cartService;
+    private final ItemRepository itemRepository;
 
 /*
     */
@@ -65,11 +65,16 @@ public class OrderService {
 
     /** 장바구니로 주문 */
     @Transactional
+    @CacheEvict( // 주문 취소 시 item의 stock 변경됨으로 인해 캐시 무효화 추가
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            allEntries = true
+    )
     public OrderResponse createCartOrder(Long userId, OrderRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         Address address = addressRepository.findById(request.getAddressId())
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
+        /**
         Cart cart = cartRepository.findCartItemsWithItemByUserId(userId)
                 .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
 
@@ -147,8 +152,13 @@ public class OrderService {
 
     /** 주문 취소 */
     @Transactional
-    public void cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+    @CacheEvict( // 주문 취소 시 item의 stock 변경됨으로 인해 캐시 무효화 추가
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            allEntries = true
+    )
+    public void cancelOrder(Long userId, Long orderId) {
+        // 사용자 검증과 동시 주문 취소로 인한 재고 추가 방지
+        Order order = orderRepository.findOrderForCancel(orderId, userId)
                 .orElseThrow(() -> new OrderNotFound("아이디에 해당하는 주문이 없습니다."));
 
         List<Long> itemIds = order.getOrderItems().stream()
