@@ -103,4 +103,8 @@ public class Item {
             this.avgStar = ((this.avgStar * (reviewCount - 1)) + newStar) / reviewCount;
         }
     }
+
+    public void changeAvgStar(float avgStar) {
+        this.avgStar = avgStar;
+    }
 }

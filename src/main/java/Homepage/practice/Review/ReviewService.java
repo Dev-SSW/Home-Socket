@@ -30,7 +30,7 @@ public class ReviewService {
     /** 리뷰 생성 */
     @Transactional
     @CacheEvict(
-            cacheNames = {"getItemReview", "getReview", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
+            cacheNames = {"getItemReview", "getReview", "getItem", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
             allEntries = true
     )
     public ReviewResponse createReview(Long userId, Long itemId, ReviewRequest request) {
@@ -41,7 +41,7 @@ public class ReviewService {
         if (!itemRepository.existsById(itemId)) {
             throw new ItemNotFound("아이디에 해당하는 아이템이 없습니다.");
         }
-        
+
         int reviewCount = (int) reviewRepository.countByItemId(itemId);
         
         // 생성 시에 Proxy 사용
@@ -56,12 +56,18 @@ public class ReviewService {
     /** 리뷰 수정 */
     @Transactional
     @CacheEvict(
-            cacheNames = {"getItemReview", "getReview", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
+            cacheNames = {"getItemReview", "getReview", "getItem", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
             allEntries = true
     )
-    public ReviewResponse updateReview(Long reviewId, ReviewUpdateRequest request) {
+    public ReviewResponse updateReview(Long userId,Long reviewId, ReviewUpdateRequest request) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFound("아이디에 해당하는 리뷰가 없습니다."));
+
+        // 소유자 검증
+        if (!review.getUser().getId().equals(userId)) {
+            throw new ReviewNotFound("수정할 수 있는 리뷰가 없습니다.");
+        }
+
         if (!itemRepository.existsById(review.getItem().getId())) {
             throw new ItemNotFound("아이디에 해당하는 아이템이 없습니다.");
         }
@@ -74,13 +80,26 @@ public class ReviewService {
     /** 리뷰 삭제 */
     @Transactional
     @CacheEvict(
-            cacheNames = {"getItemReview", "getReview", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
+            cacheNames = {"getItemReview", "getReview", "getItem", "getAllItem", "getItemsByCategory"}, // 리뷰로 상품의 평점이 바뀜
             allEntries = true
     )
-    public void deleteReview(Long reviewId) {
+    public void deleteReview(Long userId, Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFound("아이디에 해당하는 리뷰가 없습니다."));
+        // 소유자 검증
+        if (!review.getUser().getId().equals(userId)) {
+            throw new ReviewNotFound("수정할 수 있는 리뷰가 없습니다.");
+        }
+
         reviewRepository.delete(review);
+
+        Item item = review.getItem();
+
+        reviewRepository.delete(review);
+        reviewRepository.flush();
+        // 리뷰 삭제 시 별점 재계산
+        double avgStar = reviewRepository.findAverageStarByItemId(item.getId());
+        item.changeAvgStar((float) avgStar);
     }
 
     /** 리뷰 단건 조회 */

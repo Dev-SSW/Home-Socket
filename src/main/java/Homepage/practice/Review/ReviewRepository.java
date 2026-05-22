@@ -32,4 +32,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "r.id, r.title, r.comment, r.star, r.reviewDate, u.id, u.username, i.id, i.name) " +
             "from Review r join r.user u join r.item i where r.item.id = :itemId")
     Page<ReviewResponse> findReviewByItemId(@Param("itemId") Long itemId, Pageable pageable);
+
+    /** 아이템의 리뷰 평균 별점 조회 */
+    @Query("select coalesce(avg(r.star), 0) from Review r where r.item.id = :itemId")
+    double findAverageStarByItemId(@Param("itemId") Long itemId);
 }

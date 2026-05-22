@@ -33,16 +33,20 @@ public class ReviewController {
 
     @PutMapping("/user/item/review/{reviewId}/updateReview/")
     @Operation(summary = "리뷰 수정하기")
-    public ResponseEntity<GlobalApiResponse<ReviewResponse>> updateReview(@PathVariable(name = "reviewId") Long reviewId,
-                                                                          @Valid @RequestBody ReviewUpdateRequest request) {
-        ReviewResponse response = reviewService.updateReview(reviewId, request);
+    public ResponseEntity<GlobalApiResponse<ReviewResponse>> updateReview(
+            @AuthenticationPrincipal User user,
+            @PathVariable(name = "reviewId") Long reviewId,
+            @Valid @RequestBody ReviewUpdateRequest request) {
+        ReviewResponse response = reviewService.updateReview(user.getId(), reviewId, request);
         return ResponseEntity.ok(GlobalApiResponse.success("리뷰 수정 성공", response));
     }
 
     @DeleteMapping("/user/item/review/{reviewId}/deleteReview/")
     @Operation(summary = "리뷰 삭제하기")
-    public ResponseEntity<GlobalApiResponse<?>> deleteReview(@PathVariable(name = "reviewId") Long reviewId) {
-        reviewService.deleteReview(reviewId);
+    public ResponseEntity<GlobalApiResponse<?>> deleteReview(
+            @AuthenticationPrincipal User user,
+            @PathVariable(name = "reviewId") Long reviewId) {
+        reviewService.deleteReview(user.getId(), reviewId);
         return ResponseEntity.ok(GlobalApiResponse.success("리뷰 삭제 성공", null));
     }
 

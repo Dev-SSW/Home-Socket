@@ -72,7 +72,8 @@ public class ItemService {
     /** 상품 수정하기 */
     @Transactional
     @CacheEvict(
-            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            // 상품명 변경 시 리뷰에서는 예전 상품명을 들고 있을 수 있음
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory", "getReview", "getItemReview"},
             allEntries = true
     )
     public ItemResponse updateItem(Long itemId, ItemUpdateRequest request) {
@@ -85,7 +86,8 @@ public class ItemService {
     /** 상품 삭제하기 */
     @Transactional
     @CacheEvict(
-            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            // 상품명 삭제 시 리뷰에서는 예전 상품명을 들고 있을 수 있음
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory", "getReview", "getItemReview"},
             allEntries = true
     )
     public void deleteItem(Long itemId) {
