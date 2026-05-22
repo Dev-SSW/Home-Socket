@@ -35,7 +35,8 @@ public class OrderItem {
     /** 생성 메서드 */
     public static OrderItem createOrderItem(Item item, int quantity) {
         item.removeStock(quantity);
-        OrderItem orderItem = OrderItem.builder()
+        return OrderItem.builder()
+                .item(item)
                 .quantity(quantity)
                 .build();
         item.addOrderItem(orderItem);

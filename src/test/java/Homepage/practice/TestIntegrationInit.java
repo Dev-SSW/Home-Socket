@@ -89,8 +89,10 @@ public class TestIntegrationInit {
         return orderRepository.save(order);
     }
 
-    public static OrderItem createOrderItem(OrderItemRepository orderItemRepository, Item item, int quantity) {
+    public static OrderItem createOrderItem(OrderRepository orderRepository, Order order, Item item, int quantity) {
         OrderItem orderItem = OrderItem.createOrderItem(item, quantity);
-        return orderItemRepository.save(orderItem);
+        order.addOrderItem(orderItem);
+        orderRepository.save(order);
+        return orderItem;
     }
 }

@@ -35,7 +35,7 @@ public class Item {
     private List<Review> reviews = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "item")
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @Builder.Default
