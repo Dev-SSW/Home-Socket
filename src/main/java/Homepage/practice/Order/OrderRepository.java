@@ -1,9 +1,10 @@
 package Homepage.practice.Order;
 
 import Homepage.practice.Order.DTO.OrderListResponse;
-import Homepage.practice.OrderItem.OrderItem;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -22,4 +23,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @EntityGraph(attributePaths = {"delivery", "delivery.address"})
     @Query("select o from Order o where o.id = :orderId")
     Optional<Order> findOrderWithDeliveryById(@Param("orderId") Long orderId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select distinct o
+        from Order o
+        join fetch o.delivery d
+        join fetch o.orderItems oi
+        join fetch oi.item i
+        left join fetch o.couponPublish cp
+        where o.id = :orderId and o.user.id = :userId
+        """)
+    Optional<Order> findOrderForCancel(
+            @Param("orderId") Long orderId,
+            @Param("userId") Long userId
+    );
 }

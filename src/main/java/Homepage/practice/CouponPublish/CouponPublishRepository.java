@@ -1,13 +1,16 @@
 package Homepage.practice.CouponPublish;
 
 import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CouponPublishRepository extends JpaRepository<CouponPublish, Long> {
@@ -29,4 +32,12 @@ public interface CouponPublishRepository extends JpaRepository<CouponPublish, Lo
             "cp.id, cp.validStart, cp.validEnd, cp.status, c.name, c.discount) " +
             "from CouponPublish cp join cp.coupon c where cp.user.id = :userId")
     List<CouponPublishResponse> findCouponPublishByUserId(@Param("userId") Long userId);
+
+    /** 주문 시 쿠폰 사용을 위한 발급 쿠폰 row lock */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select cp from CouponPublish cp join fetch cp.coupon c where cp.id = :couponPublishId and cp.user.id = :userId")
+    Optional<CouponPublish> findByIdAndUserIdForUpdate(
+            @Param("couponPublishId") Long couponPublishId,
+            @Param("userId") Long userId
+    );
 }
