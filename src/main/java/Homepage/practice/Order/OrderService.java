@@ -1,9 +1,7 @@
 package Homepage.practice.Order;
 
 import Homepage.practice.Address.DTO.AddressResponse;
-import Homepage.practice.Cart.Cart;
-import Homepage.practice.Cart.CartRepository;
-import Homepage.practice.Cart.CartService;
+import Homepage.practice.CartItem.CartItem;
 import Homepage.practice.CartItem.CartItemRepository;
 import Homepage.practice.CartItem.DTO.CartItemResponse;
 import Homepage.practice.CouponPublish.CouponPublish;
@@ -14,17 +12,22 @@ import Homepage.practice.CouponPublish.CouponPublishStatus;
 import Homepage.practice.CouponPublish.DTO.CouponPublishResponse;
 import Homepage.practice.Delivery.Delivery;
 import Homepage.practice.Exception.*;
+import Homepage.practice.Item.Item;
+import Homepage.practice.Item.ItemRepository;
 import Homepage.practice.Order.DTO.*;
 import Homepage.practice.OrderItem.OrderItem;
 import Homepage.practice.OrderItem.OrderItemRepository;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,10 +38,9 @@ public class OrderService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final CouponPublishRepository couponPublishRepository;
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
-    private final CartService cartService;
+    private final ItemRepository itemRepository;
 
 /*
     */
@@ -63,11 +65,16 @@ public class OrderService {
 
     /** 장바구니로 주문 */
     @Transactional
+    @CacheEvict( // 주문 취소 시 item의 stock 변경됨으로 인해 캐시 무효화 추가
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            allEntries = true
+    )
     public OrderResponse createCartOrder(Long userId, OrderRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("아이디에 해당하는 회원이 없습니다."));
         Address address = addressRepository.findById(request.getAddressId())
                 .orElseThrow(() -> new AddressNotFound("아이디에 해당하는 주소를 찾을 수 없습니다."));
+        /**
         Cart cart = cartRepository.findCartItemsWithItemByUserId(userId)
                 .orElseThrow(() -> new CartNotFound("아이디에 해당하는 장바구니가 없습니다."));
 
@@ -76,16 +83,58 @@ public class OrderService {
                 .filter(cartItem -> request.getCartItemIds().contains(cartItem.getId()))
                 .map(cartItem -> OrderItem.createOrderItem(cartItem.getItem(), cartItem.getQuantity()))
                 .collect(Collectors.toList());
+        */
+        List<Long> requestCartItemIds = request.getCartItemIds().stream()
+                .distinct()
+                .sorted()
+                .toList();
 
-        // 총 합계 구하기
-        BigDecimal totalPrice = BigDecimal.valueOf(orderItems.stream()
-                .mapToDouble(OrderItem::getTotalPrice)
-                .sum());
+        if (requestCartItemIds.isEmpty()) {
+            throw new CartItemNotFound("주문할 장바구니 아이템이 없습니다.");
+        }
 
+        // 장바구니 아이템 lock (같은 장바구니 주문 요청 두 번 가능성)
+        List<CartItem> selectedCartItems = cartItemRepository.findSelectedCartItemsForUpdate(userId, requestCartItemIds);
+        if (selectedCartItems.size() != requestCartItemIds.size()) {
+            throw new CartItemNotFound("주문할 수 없는 장바구니 아이템이 포함되어 있습니다.");
+        }
+
+        // 상품 id 추출
+        List<Long> itemIds = selectedCartItems.stream()
+                .map(cartItem -> cartItem.getItem().getId())
+                .distinct()
+                .sorted()
+                .toList();
+
+        // 상품 row lock (재고 초과 차감 가능성)
+        Map<Long, Item> lockedItemMap = itemRepository.findAllByIdInForUpdate(itemIds).stream()
+                .collect(Collectors.toMap(Item::getId, Function.identity()));
+
+        if (lockedItemMap.size() != itemIds.size()) {
+            throw new ItemNotFound("주문 상품 중 존재하지 않는 상품이 있습니다.");
+        }
+
+        // 재고 차감 + 주문 상품 생성
+        List<OrderItem> orderItems = selectedCartItems.stream()
+                .map(cartItem -> {
+                    Item lockedItem = lockedItemMap.get(cartItem.getItem().getId());
+                    return OrderItem.createOrderItem(lockedItem, cartItem.getQuantity());
+                })
+                .collect(Collectors.toList());
+
+        BigDecimal totalPrice = BigDecimal.valueOf(
+                orderItems.stream()
+                        .mapToLong(OrderItem::getTotalPrice)
+                        .sum()
+        );
+
+        // 쿠폰 있을 땐 쿠폰 row lock (남의 쿠폰을 사용할 가능성)
         CouponPublish couponPublish = null;
         if (request.getCouponPublishId() != null) {
-            couponPublish = couponPublishRepository.findById(request.getCouponPublishId())
+            couponPublish = couponPublishRepository
+                    .findByIdAndUserIdForUpdate(request.getCouponPublishId(), userId)
                     .orElseThrow(() -> new CouponPublishNotFound("아이디에 해당하는 발급 쿠폰이 없습니다."));
+
             totalPrice = totalPrice.subtract(couponPublish.getCoupon().getDiscount());
         }
 
@@ -93,15 +142,41 @@ public class OrderService {
         Delivery.createDelivery(order, address); // Cascade
         orderItems.forEach(order::addOrderItem);
         orderRepository.save(order);
-        cartService.deleteItems(user, request.getCartItemIds());
+        // cartService.deleteItems(user, requestCartItemIds);
+        int deletedCount = cartItemRepository.deleteByIdsAndUserId(requestCartItemIds, userId);
+        if (deletedCount != requestCartItemIds.size()) {
+            throw new CartItemNotFound("주문할 수 없는 장바구니 아이템이 포함되어 있습니다.");
+        }
         return OrderResponse.fromEntity(order);
     }
 
     /** 주문 취소 */
     @Transactional
-    public void cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+    @CacheEvict( // 주문 취소 시 item의 stock 변경됨으로 인해 캐시 무효화 추가
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            allEntries = true
+    )
+    public void cancelOrder(Long userId, Long orderId) {
+        // 사용자 검증과 동시 주문 취소로 인한 재고 추가 방지
+        Order order = orderRepository.findOrderForCancel(orderId, userId)
                 .orElseThrow(() -> new OrderNotFound("아이디에 해당하는 주문이 없습니다."));
+
+        List<Long> itemIds = order.getOrderItems().stream()
+                .map(orderItem -> orderItem.getItem().getId())
+                .distinct()
+                .sorted()
+                .toList();
+        // 재고 복구 시 Item row lock 적용
+        itemRepository.findAllByIdInForUpdate(itemIds);
+
+        // 쿠폰 상태 복구 시 CouponPublish row lock 적용
+        if (order.getCouponPublish() != null) {
+            couponPublishRepository.findByIdAndUserIdForUpdate(
+                    order.getCouponPublish().getId(),
+                    userId
+            ).orElseThrow(() -> new CouponPublishNotFound("아이디에 해당하는 발급 쿠폰이 없습니다."));
+        }
+
         order.cancel();
     }
 

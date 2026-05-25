@@ -2,6 +2,7 @@ package Homepage.practice.Item;
 
 import Homepage.practice.Category.Category;
 import Homepage.practice.Category.CategoryRepository;
+import Homepage.practice.Common.DTO.PageResponse;
 import Homepage.practice.Exception.CategoryNotFound;
 import Homepage.practice.Exception.ItemNotFound;
 import Homepage.practice.Item.DTO.ItemRequest;
@@ -9,6 +10,8 @@ import Homepage.practice.Item.DTO.ItemResponse;
 import Homepage.practice.Item.DTO.ItemResponseCategory;
 import Homepage.practice.Item.DTO.ItemUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,10 @@ public class ItemService {
 
     /** 상품 생성 */
     @Transactional
+    @CacheEvict(
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory"},
+            allEntries = true
+    )
     public ItemResponse createItem(Long categoryId, ItemRequest request) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다."));
@@ -32,11 +39,17 @@ public class ItemService {
     }
 
     /** 전체 상품 조회 */
-    public Page<ItemResponse> getAllItem(Pageable pageable) {
-        return itemRepository.findAllItem(pageable);
+    @Cacheable(
+            cacheNames = "getAllItem",
+            key = "#pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort.toString()"
+    )
+    public PageResponse<ItemResponse> getAllItem(Pageable pageable) {
+        Page<ItemResponse> page = itemRepository.findAllItem(pageable);
+        return PageResponse.from(page);
     }
 
     /** 특정 상품 조회 */
+    @Cacheable(cacheNames = "getItem", key = "#itemId")
     public ItemResponse getItem(Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
@@ -44,15 +57,25 @@ public class ItemService {
     }
 
     /** 카테고리 별 아이템 조회 */
-    public Page<ItemResponseCategory> getItemsByCategory(Long categoryId, Pageable pageable) {
+    @Cacheable(
+            cacheNames = "getItemsByCategory",
+            key = "#categoryId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort.toString()"
+    )
+    public PageResponse<ItemResponseCategory> getItemsByCategory(Long categoryId, Pageable pageable) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다.");
         }
-        return itemRepository.findItemsByCategory(categoryId, pageable);
+        Page<ItemResponseCategory> page = itemRepository.findItemsByCategory(categoryId, pageable);
+        return PageResponse.from(page);
     }
 
     /** 상품 수정하기 */
     @Transactional
+    @CacheEvict(
+            // 상품명 변경 시 리뷰에서는 예전 상품명을 들고 있을 수 있음
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory", "getReview", "getItemReview"},
+            allEntries = true
+    )
     public ItemResponse updateItem(Long itemId, ItemUpdateRequest request) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));
@@ -62,6 +85,11 @@ public class ItemService {
 
     /** 상품 삭제하기 */
     @Transactional
+    @CacheEvict(
+            // 상품명 삭제 시 리뷰에서는 예전 상품명을 들고 있을 수 있음
+            cacheNames = {"getItem", "getAllItem", "getItemsByCategory", "getReview", "getItemReview"},
+            allEntries = true
+    )
     public void deleteItem(Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFound("아이디에 해당하는 아이템이 없습니다."));

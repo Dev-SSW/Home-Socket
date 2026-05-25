@@ -40,6 +40,10 @@ spring:
         globally_quoted_identifiers: true   # 테이블/컬럼명 자동 인용
     database: postgresql
 
+  flyway:
+    enabled: true
+    locations:
+      - classpath:db/migration/PostgreSQL
 
 # 출력 창에 나타날 출력 코드에 대한 포맷
 logging.level:

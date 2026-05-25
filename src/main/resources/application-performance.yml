@@ -41,9 +41,14 @@ spring:
     show-sql: false
     database: postgresql
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   flyway:
     enabled: true
-    validate-on-migrate: false
+    validate-on-migrate: false                  # 마이그레이션 검증 (DB기록과 현재 파일 비교)
     locations:
       - classpath:db/migration/PostgreSQL
 

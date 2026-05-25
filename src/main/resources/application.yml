@@ -82,6 +82,11 @@ spring:
         globally_quoted_identifiers: true   # 테이블/컬럼명 자동 인용
     database: postgresql
 
+  data:
+      redis:
+        host: localhost
+        port: 6379
+
   flyway:
     enabled: true
     locations:

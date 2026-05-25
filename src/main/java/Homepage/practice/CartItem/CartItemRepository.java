@@ -2,10 +2,8 @@ package Homepage.practice.CartItem;
 
 import Homepage.practice.Cart.Cart;
 import Homepage.practice.Item.Item;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -32,4 +30,12 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @Modifying
     @Query("DELETE FROM CartItem ci WHERE ci.id IN :ids AND ci.cart.user.id = :userId")
     int deleteByIdsAndUserId(@Param("ids") List<Long> ids, @Param("userId") Long userId);
+
+    /** 주문 대상 장바구니 아이템 lock */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select ci from CartItem ci join ci.cart c where c.user.id = :userId and ci.id in :cartItemIds order by ci.id asc")
+    List<CartItem> findSelectedCartItemsForUpdate(
+            @Param("userId") Long userId,
+            @Param("cartItemIds") List<Long> cartItemIds
+    );
 }

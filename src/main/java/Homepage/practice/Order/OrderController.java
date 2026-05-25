@@ -39,8 +39,8 @@ public class OrderController {
 
     @DeleteMapping("/user/order/{orderId}/cancelOrder")
     @Operation(summary = "주문 취소")
-    public ResponseEntity<GlobalApiResponse<?>> cancelOrder(@PathVariable(name = "orderId") Long orderId) {
-        orderService.cancelOrder(orderId);
+    public ResponseEntity<GlobalApiResponse<?>> cancelOrder(@AuthenticationPrincipal User user, @PathVariable(name = "orderId") Long orderId) {
+        orderService.cancelOrder(user.getId(), orderId);
         return ResponseEntity.ok(GlobalApiResponse.success("주문 취소 성공", null));
     }
 
