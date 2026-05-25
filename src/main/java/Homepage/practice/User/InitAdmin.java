@@ -3,6 +3,7 @@ package Homepage.practice.User;
 import Homepage.practice.User.DTO.SignupRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
+@Profile("!performance")
 public class InitAdmin {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

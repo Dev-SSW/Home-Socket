@@ -3,7 +3,7 @@ import path from 'path';
 
 // \s : 공백, + : 하나 이상, 공백으로 나누고 문자열을 배열로 바꿈
 // filter(Boolean) : 빈 값 제거
-const versions = (process.env.VERSIONS || 'v1 v2').split(/\s+/).filter(Boolean);    // 마이그레이션 버전
+const versions = (process.env.VERSIONS || 'v2 v3').split(/\s+/).filter(Boolean);    // 마이그레이션 버전
 const suites = (process.env.SUITES || 'read write').split(/\s+/).filter(Boolean);               // 테스트 종류
 const resultsRoot = process.env.RESULTS_ROOT || 'tests/results';                                // JSON 폴더 위치
 const reportsRoot = process.env.REPORTS_ROOT || 'tests/reports';                              // 보고서 저장 폴더 위치
