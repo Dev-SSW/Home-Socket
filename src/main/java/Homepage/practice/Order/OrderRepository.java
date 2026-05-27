@@ -15,7 +15,12 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     /** 사용자의 주문 목록 조회 */
+    /**
     @Query("select new Homepage.practice.Order.DTO.OrderListResponse(o.id, o.orderDate, o.totalPrice, d.status) " +
+            "from Order o join o.delivery d where o.user.id = :userId")
+    List<OrderListResponse> findOrderListByUserId(@Param("userId") Long userId);
+    */
+    @Query("select new Homepage.practice.Order.DTO.OrderListResponse(o.id, o.orderDate, o.totalPrice, d.status, o.status) " +
             "from Order o join o.delivery d where o.user.id = :userId")
     List<OrderListResponse> findOrderListByUserId(@Param("userId") Long userId);
 
@@ -35,6 +40,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         where o.id = :orderId and o.user.id = :userId
         """)
     Optional<Order> findOrderForCancel(
+            @Param("orderId") Long orderId,
+            @Param("userId") Long userId
+    );
+
+    /** 결제용 lock 조회 */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select distinct o
+        from Order o
+        join fetch o.delivery d
+        join fetch o.orderItems oi
+        join fetch oi.item i
+        left join fetch o.couponPublish cp
+        where o.id = :orderId and o.user.id = :userId
+        """)
+    Optional<Order> findOrderForPayment(
             @Param("orderId") Long orderId,
             @Param("userId") Long userId
     );

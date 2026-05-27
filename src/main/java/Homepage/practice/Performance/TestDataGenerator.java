@@ -378,14 +378,30 @@ public class TestDataGenerator implements CommandLineRunner {
     private void bulkInsertWriteTestCartItems() {
         System.out.println("write 테스트 전용 장바구니 아이템 생성");
 
+        // write 테스트 유저들의 기존 cart_item 제거
+        jdbcTemplate.update("""
+            DELETE FROM cart_item ci
+            USING cart c
+            WHERE ci.cart_id = c.cart_id
+              AND (
+                    c.user_id BETWEEN ? AND ?
+                    OR c.user_id BETWEEN ? AND ?
+              )
+            """,
+                CREATE_ORDER_USER_START_ID,
+                CREATE_ORDER_USER_END_ID,
+                DELETE_ITEMS_USER_START_ID,
+                DELETE_ITEMS_USER_END_ID
+        );
+
+        List<Object[]> cartItems = new ArrayList<>();
+
         if (WRITE_CART_ITEMS_PER_USER > ITEM_COUNT) {
             throw new IllegalStateException(
                     "UNIQUE(cart_id, item_id) 제약조건 때문에 " +
                             "WRITE_CART_ITEMS_PER_USER는 ITEM_COUNT를 초과할 수 없습니다."
             );
         }
-
-        List<Object[]> cartItems = new ArrayList<>();
 
         // user101~108: createOrder 전용 cartItem
         for (long userId = CREATE_ORDER_USER_START_ID; userId <= CREATE_ORDER_USER_END_ID; userId++) {

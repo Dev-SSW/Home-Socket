@@ -2,6 +2,7 @@ package Homepage.practice.Order.DTO;
 
 import Homepage.practice.Delivery.DeliveryStatus;
 import Homepage.practice.Order.Order;
+import Homepage.practice.Order.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class OrderListResponse {
     private LocalDate orderDate;        // 주문 날짜
     private BigDecimal totalPrice;      // 주문 총 가격
     private DeliveryStatus deliveryStatus; // 배송 상태
+    private OrderStatus orderStatus;
     
     public static OrderListResponse fromEntity(Order order) {
         return OrderListResponse.builder()

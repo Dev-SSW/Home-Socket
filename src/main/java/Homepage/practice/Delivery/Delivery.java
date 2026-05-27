@@ -33,7 +33,7 @@ public class Delivery {
     public static Delivery createDelivery(Order order, Address address) {
         Delivery delivery = Delivery.builder()
                 .address(address)
-                .status(DeliveryStatus.READY)
+                .status(DeliveryStatus.PAYMENT_PENDING)
                 .build();
         order.setDelivery(delivery);
         return delivery;

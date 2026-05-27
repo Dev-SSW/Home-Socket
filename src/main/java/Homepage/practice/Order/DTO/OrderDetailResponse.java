@@ -2,6 +2,7 @@ package Homepage.practice.Order.DTO;
 
 import Homepage.practice.Delivery.DTO.DeliveryResponse;
 import Homepage.practice.Order.Order;
+import Homepage.practice.Order.OrderStatus;
 import Homepage.practice.OrderItem.DTO.OrderItemResponse;
 import Homepage.practice.OrderItem.OrderItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -26,6 +27,7 @@ public class OrderDetailResponse {
     private BigDecimal totalPrice;      // 주문 총 가격
     private DeliveryResponse deliveryResponse;
     private List<OrderItemResponse> orderItemResponses;
+    private OrderStatus orderStatus;
 
     public static OrderDetailResponse fromEntity(Order order, List<OrderItem> orderItems) {
         return OrderDetailResponse.builder()
@@ -36,6 +38,7 @@ public class OrderDetailResponse {
                 .orderItemResponses(orderItems.stream()
                         .map(OrderItemResponse::fromEntity)
                         .collect(Collectors.toList()))
+                .orderStatus(order.getStatus())
                 .build();
     }
 }

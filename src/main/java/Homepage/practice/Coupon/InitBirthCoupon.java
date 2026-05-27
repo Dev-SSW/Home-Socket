@@ -2,6 +2,7 @@ package Homepage.practice.Coupon;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
+@Profile("!performance")
 public class InitBirthCoupon {
     private final CouponRepository couponRepository;
     @PostConstruct
