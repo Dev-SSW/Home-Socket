@@ -249,6 +249,12 @@ public class GlobalExceptionHandler {
                 .body(GlobalApiResponse.fail(ex.getMessage(), "ORDER_NOT_CANCEL"));
     }
 
+    /** 주문이 결제 준비 상태가 아님 */
+    @ExceptionHandler(OrderNotPending.class)
+    public ResponseEntity<GlobalApiResponse<?>> handleOrderNotPending(OrderNotPending ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GlobalApiResponse.fail(ex.getMessage(), "ORDER_NOT_PENDING"));
+    }
     /** ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 리뷰 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
     @ExceptionHandler(ReviewNotFound.class)
     public ResponseEntity<GlobalApiResponse<?>> handleReviewNotFound(ReviewNotFound ex) {

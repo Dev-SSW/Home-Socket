@@ -1,6 +1,7 @@
 package Homepage.practice.Order.DTO;
 
 import Homepage.practice.Order.Order;
+import Homepage.practice.Order.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,12 +20,14 @@ public class OrderResponse {
     private Long id;
     private LocalDate orderDate;        // 주문 날짜
     private BigDecimal totalPrice;      // 주문 총 가격
+    private OrderStatus status;
 
     public static OrderResponse fromEntity(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
                 .orderDate(order.getOrderDate())
                 .totalPrice(order.getTotalPrice())
+                .status(order.getStatus())
                 .build();
     }
 }
