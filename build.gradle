@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'																	 // Flyway
 	implementation 'org.springframework.boot:spring-boot-starter-cache'						 // Cache
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'					 // Redis
+	implementation 'org.springframework.kafka:spring-kafka'											 // Kafka
 
 	// runtimeOnly
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -48,6 +49,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'					// JUnit5, AssertJ, Spring Test 등 기본 테스트 기능
 	testImplementation 'org.springframework.security:spring-security-test'					// Security 관련 테스트 기능
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'										// JUnit 플랫폼 런처
+	testImplementation 'org.springframework.kafka:spring-kafka-test'							// Kafka 테스트
 }
 
 tasks.named('test') {

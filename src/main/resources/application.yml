@@ -92,6 +92,27 @@ spring:
     locations:
       - classpath:db/migration/PostgreSQL
 
+  kafka:
+    bootstrap-servers: localhost:9092                                                                                       # Kafka 서버 주소
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer                               # Kafka 메세지 key를 문자열로 내보냄
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer                     # Kafka 메세지 value를 JSON으로 내보냄
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: homepage-order-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer                      # 위와 동일
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer            # 위와 동일
+      properties:
+        spring.json.trusted.packages: "Homepage.practice.*"
+        spring.json.value.default.type: Homepage.practice.Order.Event.DTO.OrderPaidEvent              # Consumer가 JSON을 어떤 JAVA 타입으로 변환할지 지정
+
+# 설정 파일
+app:
+  kafka:
+    topics:
+      order-paid: order.paid
+
 payment:
   mock:
     base-url: http://localhost:8081/public/mock-payments
