@@ -1,5 +1,7 @@
 package Homepage.practice.Payment;
 
+import Homepage.practice.Event.DTO.OrderPaidEvent;
+import Homepage.practice.Event.OrderEventPublisher;
 import Homepage.practice.Exception.AmountNotMatch;
 import Homepage.practice.Exception.OrderNotFound;
 import Homepage.practice.Order.Order;
@@ -12,17 +14,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentGateway paymentGateway;
+    private final OrderEventPublisher orderEventPublisher;
     // 외부에서 실행될 API까지 DB 트랜잭션 안에서 실행될 가능성이 있으므로, 트랜잭션 분리가 필요
     private final TransactionTemplate transactionTemplate;
 
-    @Transactional
     public PaymentResponse confirmPayment(Long userId, PaymentConfirmRequest request) {
         // 승인 전 준비 과정
         PaymentConfirmRequest command = transactionTemplate.execute(status -> preparePayment(userId, request));
@@ -75,6 +78,19 @@ public class PaymentService {
         if (result.isSuccess()) {
             payment.approve(result.getPaymentKey());
             order.markPaid();
+
+            // 승인 성공 시 OrderPaidEvent 발행
+            OrderPaidEvent event = new OrderPaidEvent(
+                    UUID.randomUUID().toString(),               // Event ID
+                    order.getId(),
+                    order.getUser().getId(),
+                    order.getUser().getUsername(),
+                    payment.getId(),
+                    payment.getPaymentKey(),
+                    payment.getAmount(),
+                    payment.getApprovedAt()
+            );
+            orderEventPublisher.publishOrderPaidAfterCommit(event);
         } else {
             payment.fail(result.getMessage());
             order.failPayment();
