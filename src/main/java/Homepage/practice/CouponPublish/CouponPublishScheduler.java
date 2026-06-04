@@ -6,6 +6,7 @@ import Homepage.practice.Exception.CouponNotFound;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!performance")
 public class CouponPublishScheduler {
     private final CouponPublishRepository couponPublishRepository;
     private final UserRepository userRepository;

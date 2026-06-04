@@ -18,7 +18,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
@@ -27,7 +26,6 @@ public class PaymentService {
     // 외부에서 실행될 API까지 DB 트랜잭션 안에서 실행될 가능성이 있으므로, 트랜잭션 분리가 필요
     private final TransactionTemplate transactionTemplate;
 
-    @Transactional
     public PaymentResponse confirmPayment(Long userId, PaymentConfirmRequest request) {
         // 승인 전 준비 과정
         PaymentConfirmRequest command = transactionTemplate.execute(status -> preparePayment(userId, request));
@@ -86,6 +84,7 @@ public class PaymentService {
                     UUID.randomUUID().toString(),               // Event ID
                     order.getId(),
                     order.getUser().getId(),
+                    order.getUser().getUsername(),
                     payment.getId(),
                     payment.getPaymentKey(),
                     payment.getAmount(),

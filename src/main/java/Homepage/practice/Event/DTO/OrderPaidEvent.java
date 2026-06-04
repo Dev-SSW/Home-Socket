@@ -11,11 +11,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderPaidEvent {
-    String eventId;
-    Long orderId;
-    Long userId;
-    Long paymentId;
-    String paymentKey;
-    BigDecimal paidAmount;
-    LocalDateTime paidAt;
+    private String eventId;
+    private Long orderId;
+    private Long userId;
+    private String username;
+    private Long paymentId;
+    private String paymentKey;
+    private BigDecimal paidAmount;
+    private LocalDateTime paidAt;
 }

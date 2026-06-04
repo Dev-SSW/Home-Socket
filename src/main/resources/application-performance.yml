@@ -65,7 +65,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "Homepage.practice.*"
-        spring.json.value.default.type: Homepage.practice.Order.Event.OrderPaidEvent
+        spring.json.value.default.type: Homepage.practice.Event.DTO.OrderPaidEvent
 
 app:
   kafka:

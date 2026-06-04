@@ -105,7 +105,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer            # 위와 동일
       properties:
         spring.json.trusted.packages: "Homepage.practice.*"
-        spring.json.value.default.type: Homepage.practice.Order.Event.DTO.OrderPaidEvent              # Consumer가 JSON을 어떤 JAVA 타입으로 변환할지 지정
+        spring.json.value.default.type: Homepage.practice.Event.DTO.OrderPaidEvent              # Consumer가 JSON을 어떤 JAVA 타입으로 변환할지 지정
 
 # 설정 파일
 app:

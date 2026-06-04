@@ -10,7 +10,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
     // 결제 완료된 주문 이벤트들이 들어가는 topic
     @Bean
-    public NewTopic orderPaidTopic(@Value("${app.kafka.topic.order-paid}") String topicName) {
+    public NewTopic orderPaidTopic(@Value("${app.kafka.topics.order-paid}") String topicName) {
         return TopicBuilder.name(topicName)
                 // topic을 3개 파티션으로 나눔
                 .partitions(3)
