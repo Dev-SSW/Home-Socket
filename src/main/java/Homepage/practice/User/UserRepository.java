@@ -25,4 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** 해당 생일을 가진 유저 ID만 찾기 */
     @Query("SELECT u.id FROM User u WHERE FUNCTION('MONTH', u.birth) = FUNCTION('MONTH', CURRENT_DATE) AND FUNCTION('DAY', u.birth) = FUNCTION('DAY', CURRENT_DATE)")
     List<Long> findUserIdsByBirthToday();
+
+    /** 사용자 역할 조회 */
+    List<User> findByRole(Role role);
 }

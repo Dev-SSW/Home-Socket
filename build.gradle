@@ -31,6 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-cache'						 // Cache
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'					 // Redis
 	implementation 'org.springframework.kafka:spring-kafka'											 // Kafka
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'				// WebSocket
 
 	// runtimeOnly
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
