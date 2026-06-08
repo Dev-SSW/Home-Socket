@@ -122,7 +122,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(
                 "http://leoan.p-e.kr", "https://leoan.p-e.kr","http://localhost:8081",
-                "https://localhost:8081", "http://localhost:3000", "https://localhost:3000"));
+                "https://localhost:8081", "http://localhost:3000", "https://localhost:3000",
+                // IntelliJ 내장 웹 서버
+                "http://localhost:63342", "http://127.0.0.1:63342"));
                 // *:와일드 카드 URL을 사용하려면 OriginPatterns를 사용해야 합니다.
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

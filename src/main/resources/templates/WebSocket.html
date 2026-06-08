@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Notification Test</title>
+</head>
+<body>
+<h3>WebSocket Notification Test</h3>
+
+<div>
+    <label>JWT</label><br />
+    <textarea id="token" style="width: 900px; height: 100px;"></textarea>
+</div>
+
+<div style="margin-top: 12px;">
+    <label>Subscribe Type</label>
+    <select id="subscribeType">
+        <option value="user">USER - /user/queue/notifications</option>
+        <option value="admin">ADMIN - /user/queue/admin-notifications</option>
+    </select>
+</div>
+
+<div style="margin-top: 12px;">
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+</div>
+
+<h4>Logs</h4>
+<pre id="log" style="border: 1px solid #ccc; padding: 12px; height: 400px; overflow: auto;"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+
+<script>
+    let client;
+
+    function log(message) {
+      const logArea = document.getElementById('log');
+      logArea.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function connect() {
+      const token = document.getElementById('token').value.trim();
+      const subscribeType = document.getElementById('subscribeType').value;
+
+      if (!token) {
+        log('JWT를 입력하세요.');
+        return;
+      }
+
+      client = new StompJs.Client({
+        brokerURL: 'ws://localhost:8081/ws',
+        connectHeaders: {
+          Authorization: 'Bearer ' + token
+        },
+        debug: function (str) {
+          console.log(str);
+        },
+        reconnectDelay: 0,
+
+        onConnect: function () {
+          log('WebSocket connected');
+
+          if (subscribeType === 'user') {
+            client.subscribe('/user/queue/notifications', function (message) {
+              log('[USER NOTIFICATION] ' + message.body);
+            });
+
+            log('Subscribed: /user/queue/notifications');
+          }
+
+          if (subscribeType === 'admin') {
+            client.subscribe('/user/queue/admin-notifications', function (message) {
+              log('[ADMIN NOTIFICATION] ' + message.body);
+            });
+
+            log('Subscribed: /user/queue/admin-notifications');
+          }
+        },
+
+        onStompError: function (frame) {
+          log('STOMP ERROR: ' + frame.headers['message']);
+          log('DETAIL: ' + frame.body);
+        },
+
+        onWebSocketError: function (event) {
+          log('WebSocket error. 브라우저 console도 확인하세요.');
+          console.error(event);
+        },
+
+        onWebSocketClose: function () {
+          log('WebSocket closed');
+        }
+      });
+
+      client.activate();
+    }
+
+    function disconnect() {
+      if (client) {
+        client.deactivate();
+        log('WebSocket disconnected');
+      }
+    }
+</script>
+</body>
+</html>
