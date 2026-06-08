@@ -1,0 +1,28 @@
+# Kafka를 로컬에 접근 가능하게 만들기 위함
+services:
+  kafka:
+    image: apache/kafka:3.8.0             # 도커 이미지
+    container_name: homepage-kafka # 컨테이너 이름 고정
+    ports:
+      - "9092:9092"                             # 호스트포트:컨테이너포트(컨테이너 내부의 포트)
+    environment:
+      KAFKA_NODE_ID: 1                                          # 서버 고유 ID (현재 Broker가 1개이므로 1)
+      KAFKA_PROCESS_ROLES: broker,controller     # KRaft 모드 실행 시 역할 지정
+                                                                             # Broker : producer/consumer 요청 받고 topic message 저장/전달 역할
+                                                                             # Controller : Kafka Cluster metadata 관리 역할
+
+      KAFKA_LISTENERS: PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,CONTROLLER://:9093               # 컨테이너 내부에서 어떤 포트를 열고 기다릴지 정함
+                                                                                                                                                              # 9093은 kafka 내부 controler 통신용
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092     # Docker Compose 내부 실행과 로컬에서 실행 시의 Kafka 주소
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      # 앞서 만든 LISTENER들이 어떤 보안 프로토콜을 사용 할 것인지 지정 (PLAINTEXT : 암호화/인증 없음)
+
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER   # Controller가 사용할 LISTENER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093  # Node ID, Host, Port
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT       # Broker 간의 통신에 사용할 Listener 이름
+
+      # Replication 관련 설정 (현재 로컬 설정용이므로 전부 1)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0

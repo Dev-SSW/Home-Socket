@@ -17,6 +17,7 @@ import Homepage.practice.Item.Item;
 import Homepage.practice.Item.ItemRepository;
 import Homepage.practice.Order.DTO.*;
 import Homepage.practice.OrderItem.OrderItem;
+import Homepage.practice.OrderItem.OrderItemRepository;
 import Homepage.practice.TestUnitInit;
 import Homepage.practice.User.User;
 import Homepage.practice.User.UserRepository;
@@ -49,6 +50,7 @@ public class UnitOrder {
     @Mock private CartItemRepository cartItemRepository;
     @Mock private OrderRepository orderRepository;
     @Mock private DeliveryRepository deliveryRepository;
+    @Mock private OrderItemRepository orderItemRepository;
     @InjectMocks private OrderService orderService;
 
     private User testUser;
@@ -78,21 +80,10 @@ public class UnitOrder {
         // given
         given(userRepository.findById(testUser.getId())).willReturn(Optional.of(testUser));
         given(addressRepository.findById(testAddress.getId())).willReturn(Optional.of(testAddress));
-        given(cartItemRepository.findSelectedCartItemsForUpdate(
-                testUser.getId(),
-                List.of(testCartItem.getId())
-        )).willReturn(List.of(testCartItem));
-        given(itemRepository.findAllByIdInForUpdate(
-                List.of(testItem.getId())
-        )).willReturn(List.of(testItem));
-        given(couponPublishRepository.findByIdAndUserIdForUpdate(
-                testCouponPublish.getId(),
-                testUser.getId()
-        )).willReturn(Optional.of(testCouponPublish));
-        given(cartItemRepository.deleteByIdsAndUserId(
-                List.of(testCartItem.getId()),
-                testUser.getId()
-        )).willReturn(1);
+        given(cartItemRepository.findSelectedCartItemsForUpdate(testUser.getId(), List.of(testCartItem.getId()))).willReturn(List.of(testCartItem));
+        given(itemRepository.findAllByIdInForUpdate(List.of(testItem.getId()))).willReturn(List.of(testItem));
+        given(couponPublishRepository.findByIdAndUserIdForUpdate(testCouponPublish.getId(), testUser.getId())).willReturn(Optional.of(testCouponPublish));
+        given(cartItemRepository.deleteByIdsAndUserId(List.of(testCartItem.getId()), testUser.getId())).willReturn(1);
 
         // when
         OrderResponse response = orderService.createCartOrder(testUser.getId(),
@@ -100,10 +91,7 @@ public class UnitOrder {
 
         // then
         verify(orderRepository).save(any(Order.class));
-        verify(cartItemRepository).deleteByIdsAndUserId(
-                List.of(testCartItem.getId()),
-                testUser.getId()
-        );
+        verify(cartItemRepository).deleteByIdsAndUserId(List.of(testCartItem.getId()), testUser.getId());
         // 총 금액 계산
         assertThat(response.getTotalPrice().compareTo(BigDecimal.valueOf(19000))).isZero();
         // createOrderItem에서 재고 사용
@@ -111,7 +99,7 @@ public class UnitOrder {
         // createOrder에서 useCoupon() 사용
         assertThat(testCouponPublish.getStatus()).isEqualTo(CouponPublishStatus.USED);
         // createDelivery에서 READY로 상태 변화
-        assertThat(testUser.getOrders().get(0).getDelivery().getStatus()).isEqualTo(DeliveryStatus.READY);
+        assertThat(testUser.getOrders().get(0).getDelivery().getStatus()).isEqualTo(DeliveryStatus.PAYMENT_PENDING);
     }
 
     @Test
@@ -122,21 +110,17 @@ public class UnitOrder {
         OrderItem testOrderItem = TestUnitInit.createOrderItem(10L, testItem, 2);
         testOrder.addOrderItem(testOrderItem);
         Delivery testDelivery = TestUnitInit.createDelivery(11L, testOrder, testAddress);
-        given(orderRepository.findOrderForCancel(testOrder.getId(), testUser.getId()))
-                .willReturn(Optional.of(testOrder));
-        given(itemRepository.findAllByIdInForUpdate(List.of(testItem.getId())))
-                .willReturn(List.of(testItem));
-
-        given(couponPublishRepository.findByIdAndUserIdForUpdate(
-                testCouponPublish.getId(),
-                testUser.getId()
-        )).willReturn(Optional.of(testCouponPublish));
+        testOrder.markPaid();
+        given(orderRepository.findOrderForCancel(testOrder.getId(), testUser.getId())).willReturn(Optional.of(testOrder));
+        given(itemRepository.findAllByIdInForUpdate(List.of(testItem.getId()))).willReturn(List.of(testItem));
+        given(couponPublishRepository.findByIdAndUserIdForUpdate(testCouponPublish.getId(), testUser.getId())).willReturn(Optional.of(testCouponPublish));
 
         // when
         orderService.cancelOrder(testUser.getId(), testOrder.getId());
 
         // then
         // order.cancel()에서 Delivery 상태 CANCELLED로 상태 변화
+        assertThat(testOrder.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(testDelivery.getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
         // order.cancel()에서 orderItems.forEach(OrderItem::cancel)로 item.addStock 수행
         assertThat(testItem.getStock()).isEqualTo(1000);

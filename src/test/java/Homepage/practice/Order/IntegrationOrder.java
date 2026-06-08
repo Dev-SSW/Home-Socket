@@ -13,6 +13,7 @@ import Homepage.practice.Coupon.Coupon;
 import Homepage.practice.Coupon.CouponRepository;
 import Homepage.practice.CouponPublish.CouponPublish;
 import Homepage.practice.CouponPublish.CouponPublishRepository;
+import Homepage.practice.CouponPublish.CouponPublishStatus;
 import Homepage.practice.Delivery.*;
 import Homepage.practice.Item.Item;
 import Homepage.practice.Item.ItemRepository;
@@ -107,10 +108,11 @@ public class IntegrationOrder {
     void cancelOrder_success() throws Exception {
         // given
         Order testOrder = TestIntegrationInit.createOrder(orderRepository, testUser, testCouponPublish, BigDecimal.valueOf(19000));
-        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderItemRepository, testItem, 2);
-        testOrder.addOrderItem(testOrderItem);
         Delivery testDelivery = TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
+        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderRepository, testOrder, testItem, 2);
 
+        testOrder.markPaid();
+        orderRepository.saveAndFlush(testOrder);
         // when & then
         mockMvc.perform(delete("/user/order/{orderId}/cancelOrder", testOrder.getId())
                         .with(user(testUser)))
@@ -118,8 +120,13 @@ public class IntegrationOrder {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("주문 취소 성공"));
 
-        Delivery updateDelivery = deliveryRepository.findById(testDelivery.getId()).orElseThrow();
-        assertThat(updateDelivery.getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+        Delivery updatedDelivery = deliveryRepository.findById(testDelivery.getId()).orElseThrow();
+        Item updatedItem = itemRepository.findById(testItem.getId()).orElseThrow();
+        CouponPublish updatedCouponPublish = couponPublishRepository.findById(testCouponPublish.getId()).orElseThrow();
+
+        assertThat(updatedDelivery.getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+        assertThat(updatedItem.getStock()).isEqualTo(1000);
+        assertThat(updatedCouponPublish.getStatus()).isEqualTo(CouponPublishStatus.AVAILABLE);
     }
 
     @Test
@@ -128,7 +135,7 @@ public class IntegrationOrder {
     void getOrderList_success() throws Exception {
         // given
         Order testOrder = TestIntegrationInit.createOrder(orderRepository, testUser, testCouponPublish, BigDecimal.valueOf(19000));
-        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderItemRepository, testItem, 2);
+        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderRepository, testOrder, testItem, 2);
         testOrder.addOrderItem(testOrderItem);
         TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
 
@@ -139,7 +146,7 @@ public class IntegrationOrder {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("사용자의 주문 목록 조회 성공"))
                 .andExpect(jsonPath("$.data[0].totalPrice").value(19000))
-                .andExpect(jsonPath("$.data[0].deliveryStatus").value(DeliveryStatus.READY.name()));
+                .andExpect(jsonPath("$.data[0].deliveryStatus").value(DeliveryStatus.PAYMENT_PENDING.name()));
     }
 
     @Test
@@ -148,7 +155,7 @@ public class IntegrationOrder {
     void getOrderDetail_success() throws Exception {
         // given
         Order testOrder = TestIntegrationInit.createOrder(orderRepository, testUser, testCouponPublish, BigDecimal.valueOf(19000));
-        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderItemRepository, testItem, 2);
+        OrderItem testOrderItem = TestIntegrationInit.createOrderItem(orderRepository, testOrder, testItem, 2);
         testOrder.addOrderItem(testOrderItem);
         TestIntegrationInit.createDelivery(deliveryRepository, testOrder, testAddress);
 
@@ -159,7 +166,7 @@ public class IntegrationOrder {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("주문 상세 페이지 조회 성공"))
                 .andExpect(jsonPath("$.data.totalPrice").value(19000))
-                .andExpect(jsonPath("$.data.deliveryResponse.status").value(DeliveryStatus.READY.name()));
+                .andExpect(jsonPath("$.data.deliveryResponse.status").value(DeliveryStatus.PAYMENT_PENDING.name()));
     }
 
     @Test

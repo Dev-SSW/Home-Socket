@@ -45,6 +45,10 @@ spring:
     locations:
       - classpath:db/migration/PostgreSQL
 
+  kafka:
+    listener:
+      auto-startup: false
+
 # 출력 창에 나타날 출력 코드에 대한 포맷
 logging.level:
   root: info                                               # 전체 기본 레벨
