@@ -25,6 +25,7 @@ import java.util.*;
 public class User implements UserDetails, OAuth2User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "user_id")
     private Long id;                        // id
+    @Column(nullable = false, unique = true)
     private String username;                // 회원 ID
     private String password;                // 회원 Password
     private LocalDate birth;                // 회원 생년월일

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
-@Profile("!performance")
+@Profile({"!performance & !test"})
 public class InitAdmin {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
-@Profile("!performance")
+@Profile({"!performance & !test"})
 public class InitBirthCoupon {
     private final CouponRepository couponRepository;
     @PostConstruct

@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Profile("!performance")
+@Profile("!performance & !test")
 public class CouponPublishScheduler {
     private final CouponPublishRepository couponPublishRepository;
     private final UserRepository userRepository;
