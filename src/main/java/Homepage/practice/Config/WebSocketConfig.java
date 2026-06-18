@@ -25,10 +25,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // WebSocket 연결 endpoint - 프론트에서 ws://localhost:8081/ws 로 연결
         registry.addEndpoint("/ws")
+                //.setAllowedOriginPatterns("https://")
                 .setAllowedOriginPatterns("*");
 
         // SockJS fallback endpoint, 프론트에서 http://localhost:8081/ws-sockjs 로 연결.
         registry.addEndpoint("/ws-sockjs")
+                //.setAllowedOriginPatterns("https://")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }

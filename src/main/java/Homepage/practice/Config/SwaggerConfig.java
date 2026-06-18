@@ -21,7 +21,8 @@ public class SwaggerConfig {
                         .description("<h3>Swagger test</h3>"))
                 .servers(List.of(
                         // new Server().url("https://").description("배포 환경"),
-                        new Server().url("http://localhost:8081").description("테스트 환경")
+                        //new Server().url("http://localhost:8081").description("테스트 환경")
+                        new Server().url("/").description("현재 접속 주소")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()

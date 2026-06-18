@@ -83,9 +83,9 @@ public class IntegrationCategory {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("루트 카테고리 가져오기 성공"))
-                .andExpect(jsonPath("$.data[0].name").value("category1"))
-                .andExpect(jsonPath("$.data[0].depth").value(0))
-                .andExpect(jsonPath("$.data[0].children").isArray());
+                .andExpect(jsonPath("$.data.categories[0].name").value("category1"))
+                .andExpect(jsonPath("$.data.categories[0].depth").value(0))
+                .andExpect(jsonPath("$.data.categories[0].children").isArray());
     }
 
     @Test
@@ -107,9 +107,9 @@ public class IntegrationCategory {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("자식 카테고리 가져오기 성공"))
-                .andExpect(jsonPath("$.data[0].name").value("childCategory"))
-                .andExpect(jsonPath("$.data[0].depth").value(1))
-                .andExpect(jsonPath("$.data[0].children").isArray());
+                .andExpect(jsonPath("$.data.categories[0].name").value("childCategory"))
+                .andExpect(jsonPath("$.data.categories[0].depth").value(1))
+                .andExpect(jsonPath("$.data.categories[0].children").isArray());
     }
 
     @Test
