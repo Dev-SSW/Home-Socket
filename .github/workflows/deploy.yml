@@ -62,6 +62,13 @@ jobs:
           name: app-jar
           path: ./artifact
 
+      - name: Validate deployment secrets
+        run: |
+          test -n "${{ secrets.OCI_HOST }}" || (echo "OCI_HOST is empty" && exit 1)
+          test -n "${{ secrets.OCI_USER }}" || (echo "OCI_USER is empty" && exit 1)
+          test -n "${{ secrets.OCI_SSH_KEY }}" || (echo "OCI_SSH_KEY is empty" && exit 1)
+          test -n "${{ secrets.APP_DIR }}" || (echo "APP_DIR is empty" && exit 1)
+
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
@@ -96,26 +103,35 @@ jobs:
             echo "Rebuild app image and recreate app container"
             docker compose -f docker-compose.prod.yml up -d --build --force-recreate app
 
-            echo "Wait for app startup"
-            sleep 25
-
             echo "Container status"
             docker compose -f docker-compose.prod.yml ps
 
-            echo "Recent app logs"
-            docker compose -f docker-compose.prod.yml logs --tail=100 app
-
-            echo "Health check"
-            curl -f -s -o /dev/null http://127.0.0.1:8081/v3/api-docs || {
-              echo "Health check failed. Rolling back."
-
-              if [ -f "${JAR_NAME}.bak" ]; then
-                cp "${JAR_NAME}.bak" "$JAR_NAME"
-                docker compose -f docker-compose.prod.yml up -d --build --force-recreate app
+            echo "Wait for app startup"
+            for i in {1..60}; do
+              if curl --max-time 5 -f -s -o /dev/null http://127.0.0.1:8081/v3/api-docs; then
+                echo "Health check success"
+                break
               fi
 
-              exit 1
-            }
+              echo "Waiting for app... attempt $i/60"
+              sleep 5
+
+              if [ "$i" -eq 60 ]; then
+                echo "Health check failed. App logs:"
+                docker compose -f docker-compose.prod.yml logs --tail=300 app
+
+                echo "Rolling back."
+                if [ -f "${JAR_NAME}.bak" ]; then
+                  cp "${JAR_NAME}.bak" "$JAR_NAME"
+                  docker compose -f docker-compose.prod.yml up -d --build --force-recreate app
+                fi
+
+                exit 1
+              fi
+            done
+
+            echo "Recent app logs"
+            docker compose -f docker-compose.prod.yml logs --tail=100 app
 
             echo "Clean unused Docker images"
             docker image prune -f
