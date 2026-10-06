@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Socket Store</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#store" aria-label="Home Socket Store">
+          <span class="brand-mark">H/S</span>
+          <span>
+            <strong>Home Socket</strong>
+            <small>Commerce Store</small>
+          </span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="주요 메뉴">
+          <a href="#store" data-nav="store">Shop</a>
+          <a href="#cart" data-nav="cart" data-auth="user">장바구니</a>
+          <a href="#checkout" data-nav="checkout" data-auth="user">주문/결제</a>
+          <a href="#orders" data-nav="orders" data-auth="user">주문내역</a>
+          <a href="#account" data-nav="account" data-auth="user">마이페이지</a>
+        </nav>
+
+        <div class="topbar-actions">
+          <a class="utility-link" href="#admin" data-nav="admin" data-auth="admin">Admin</a>
+          <a class="utility-link" href="#realtime" data-nav="realtime" data-auth="user">알림</a>
+          <span id="authBadge" class="auth-badge">로그인 필요</span>
+          <button id="logoutBtn" class="icon-button hidden" type="button" title="로그아웃" aria-label="로그아웃">
+            <span aria-hidden="true">⎋</span>
+          </button>
+          <a class="primary-link" href="#auth" data-nav="auth">로그인</a>
+        </div>
+      </header>
+
+      <div class="status-strip">
+        <div class="status-current">
+          <span id="currentViewLabel">Shop</span>
+          <strong id="currentViewTitle">상품 탐색</strong>
+        </div>
+        <nav class="workflow-steps" aria-label="작업 흐름">
+          <a href="#store">상품</a>
+          <a href="#cart" data-auth="user">장바구니</a>
+          <a href="#checkout" data-auth="user">주문</a>
+          <a href="#orders" data-auth="user">결과 확인</a>
+          <a href="#auth" data-auth="guest">로그인</a>
+        </nav>
+        <div class="status-meta">
+          <span id="networkBadge" class="network-badge">Ready</span>
+          <span>API <strong id="apiModeLabel">same-origin</strong></span>
+          <span id="clockLabel">--:--</span>
+        </div>
+      </div>
+
+      <main>
+        <section id="view-store" class="view">
+          <div class="hero-band">
+            <div class="hero-copy">
+              <p>HOME SOCKET EDITORIAL</p>
+              <h1>New Arrivals For Everyday Socket Life</h1>
+              <span class="hero-note">데모 상품을 둘러보고 로그인 후 장바구니, 주문, 결제 흐름을 확인하세요.</span>
+              <div class="hero-actions">
+                <button class="primary-button" type="button" data-action="load-store">Shop Now</button>
+                <a class="secondary-button" href="#auth" data-auth="guest">Login</a>
+                <a class="secondary-button" href="#cart" data-auth="user">My Cart</a>
+              </div>
+            </div>
+            <div class="editorial-board" aria-label="추천 상품 무드보드">
+              <div class="editorial-tile large">
+                <span>01</span>
+                <strong>STANDARD</strong>
+                <small>clean line / daily fit</small>
+              </div>
+              <div class="editorial-tile">
+                <span>02</span>
+                <strong>BEST</strong>
+                <small>weekly ranking</small>
+              </div>
+              <div class="editorial-tile dark">
+                <span>03</span>
+                <strong>SALE</strong>
+                <small>demo coupon ready</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="store-quickbar" aria-label="스토어 요약">
+            <a href="#store" data-action="load-store">New</a>
+            <button type="button" data-action="load-categories">Category</button>
+            <a href="#auth" data-auth="guest">Sign in</a>
+            <a href="#orders" data-auth="user">Orders</a>
+            <a href="#admin" data-auth="admin">Admin</a>
+            <span><strong id="metricItemCount">0</strong> Items</span>
+            <span data-auth="user"><strong id="metricCartCount">0</strong> Cart</span>
+            <span data-auth="user"><strong id="metricOrderCount">0</strong> Orders</span>
+          </div>
+
+          <div class="toolbar-panel">
+            <form id="storeFilterForm" class="filter-grid">
+              <label>
+                Page
+                <input name="page" type="number" min="0" value="0" />
+              </label>
+              <label>
+                Size
+                <input name="size" type="number" min="1" max="50" value="12" />
+              </label>
+              <label>
+                Sort
+                <select name="sort">
+                  <option value="">기본</option>
+                  <option value="itemPrice,asc">가격 낮은순</option>
+                  <option value="itemPrice,desc">가격 높은순</option>
+                  <option value="name,asc">이름순</option>
+                </select>
+              </label>
+              <label>
+                Category ID
+                <input name="categoryId" type="number" min="1" placeholder="선택 사항" />
+              </label>
+              <button class="primary-button" type="submit">적용</button>
+            </form>
+          </div>
+
+          <div class="layout-two">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Ranking</p>
+                  <h2>All Products</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-categories">카테고리</button>
+              </div>
+              <div id="itemGrid" class="item-grid"></div>
+              <div id="itemPager" class="pager"></div>
+            </section>
+
+            <aside class="side-panel">
+              <div class="section-title compact">
+                <div>
+                  <p>Browse</p>
+                  <h2>Category</h2>
+                </div>
+              </div>
+              <div id="categoryTree" class="tree-list empty-state">카테고리를 불러오세요.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-auth" class="view hidden">
+          <div class="auth-layout">
+            <section class="auth-panel">
+              <p class="eyebrow">Sign in</p>
+              <h2>로그인</h2>
+              <form id="loginForm" class="form-grid">
+                <label>아이디 <input name="username" autocomplete="username" required /></label>
+                <label>비밀번호 <input name="password" type="password" autocomplete="current-password" required /></label>
+                <button class="primary-button full" type="submit">로그인</button>
+              </form>
+              <div class="social-links">
+                <a href="/oauth2/authorization/google">Google OAuth</a>
+                <a href="/oauth2/authorization/naver">Naver OAuth</a>
+              </div>
+              <div class="inline-actions">
+                <button class="ghost-button" type="button" data-action="validate-token">토큰 검증</button>
+                <button class="ghost-button" type="button" data-action="renew-token">토큰 재발급</button>
+              </div>
+            </section>
+
+            <section class="auth-panel accent">
+              <p class="eyebrow">Create account</p>
+              <h2>회원가입</h2>
+              <form id="signupForm" class="form-grid">
+                <label>아이디 <input name="username" required /></label>
+                <label>비밀번호 <input name="password" type="password" required /></label>
+                <label>이름 <input name="name" required /></label>
+                <label>생년월일 <input name="birth" type="date" required /></label>
+                <button class="primary-button full" type="submit">가입하기</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-detail" class="view hidden">
+          <div id="detailContainer" class="detail-container empty-state">상품을 선택하면 상세 정보가 표시됩니다.</div>
+        </section>
+
+        <section id="view-cart" class="view hidden">
+          <div class="layout-two">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Cart</p>
+                  <h2>장바구니</h2>
+                </div>
+                <div class="inline-actions">
+                  <button class="ghost-button" type="button" data-action="load-cart">새로고침</button>
+                  <button class="danger-button" type="button" data-action="clear-cart">비우기</button>
+                </div>
+              </div>
+              <div id="cartList" class="table-wrap"></div>
+            </section>
+
+            <aside class="side-panel">
+              <p class="eyebrow">Summary</p>
+              <h2>결제 예상 금액</h2>
+              <dl class="summary-list">
+                <div><dt>상품 합계</dt><dd id="cartTotalPrice">0원</dd></div>
+                <div><dt>선택 상품</dt><dd id="cartSelectedCount">0개</dd></div>
+              </dl>
+              <button class="primary-button full center" type="button" data-action="go-checkout-selected">주문하기</button>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-checkout" class="view hidden">
+          <div class="layout-two wide-main">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Checkout</p>
+                  <h2>주문/결제</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-order-page">주문 데이터 불러오기</button>
+              </div>
+
+              <div class="checkout-grid">
+                <div>
+                  <h3>배송지</h3>
+                  <div id="checkoutAddressList" class="option-list empty-state">배송지를 불러오세요.</div>
+                </div>
+                <div>
+                  <h3>쿠폰</h3>
+                  <div id="checkoutCouponList" class="option-list empty-state">쿠폰을 불러오세요.</div>
+                </div>
+                <div class="span-2">
+                  <h3>주문 상품</h3>
+                  <div id="checkoutCartItems" class="table-wrap empty-state">장바구니 상품을 불러오세요.</div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="side-panel sticky-panel">
+              <p class="eyebrow">Checkout</p>
+              <h2>주문하기</h2>
+              <form id="orderForm" class="form-grid">
+                <input name="addressId" type="hidden" required />
+                <input name="couponPublishId" type="hidden" />
+                <input name="cartItemIds" type="hidden" required />
+                <dl class="summary-list checkout-summary">
+                  <div><dt>선택 상품</dt><dd id="checkoutSelectedCount">0개</dd></div>
+                  <div><dt>상품 합계</dt><dd id="checkoutSubtotal">0원</dd></div>
+                  <div><dt>쿠폰 할인</dt><dd id="checkoutDiscount">0원</dd></div>
+                  <div><dt>결제 예정</dt><dd id="checkoutTotalPrice">0원</dd></div>
+                </dl>
+                <label>
+                  결제 테스트 결과
+                  <select name="mockResult">
+                    <option value="SUCCESS">성공</option>
+                    <option value="FAIL">실패</option>
+                    <option value="TIMEOUT">타임아웃</option>
+                  </select>
+                </label>
+                <button class="primary-button full" type="submit">주문하고 결제하기</button>
+              </form>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-orders" class="view hidden">
+          <div class="layout-two">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Orders</p>
+                  <h2>주문 내역</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-orders">새로고침</button>
+              </div>
+              <div id="orderList" class="table-wrap"></div>
+            </section>
+            <aside class="side-panel">
+              <p class="eyebrow">Detail</p>
+              <h2>주문 상세</h2>
+              <form id="orderDetailForm" class="form-grid inline-form">
+                <label>주문 ID <input name="orderId" type="number" min="1" required /></label>
+                <button class="primary-button full" type="submit">상세 조회</button>
+              </form>
+              <div id="orderDetail" class="detail-mini empty-state">주문을 선택하세요.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-account" class="view hidden">
+          <div class="dashboard-grid">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Profile</p>
+                  <h2>내 정보</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-profile">조회</button>
+              </div>
+              <div id="profileBox" class="info-box empty-state">로그인 후 조회할 수 있습니다.</div>
+              <form id="profileUpdateForm" class="form-grid two-col">
+                <label>이름 <input name="name" /></label>
+                <label>생년월일 <input name="birth" type="date" /></label>
+                <button class="primary-button" type="submit">정보 수정</button>
+              </form>
+              <form id="passwordForm" class="form-grid two-col">
+                <label>현재 비밀번호 <input name="currentPassword" type="password" required /></label>
+                <label>새 비밀번호 <input name="newPassword" type="password" required /></label>
+                <button class="secondary-button" type="submit">비밀번호 변경</button>
+              </form>
+            </section>
+
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Address</p>
+                  <h2>배송지 관리</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-addresses">목록</button>
+              </div>
+              <form id="addressForm" class="form-grid two-col">
+                <input name="addressId" type="hidden" />
+                <label>도로명 <input name="street" required /></label>
+                <label>상세주소 <input name="detailStreet" required /></label>
+                <label>우편번호 <input name="zipcode" required /></label>
+                <label class="check-row"><input name="defaultAddress" type="checkbox" /> 기본 배송지</label>
+                <button class="primary-button" type="submit">저장</button>
+                <button class="ghost-button" type="button" data-action="reset-address-form">초기화</button>
+              </form>
+              <div id="addressList" class="table-wrap"></div>
+            </section>
+
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Coupon</p>
+                  <h2>내 쿠폰</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-user-coupons">조회</button>
+              </div>
+              <form id="couponPublishForm" class="form-grid inline-form">
+                <label>쿠폰 ID <input name="couponId" type="number" min="1" required /></label>
+                <button class="primary-button full" type="submit">쿠폰 발급</button>
+              </form>
+              <div id="userCouponList" class="table-wrap"></div>
+            </section>
+
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>Reviews</p>
+                  <h2>내 리뷰</h2>
+                </div>
+                <button class="ghost-button" type="button" data-action="load-user-reviews">조회</button>
+              </div>
+              <div id="userReviewList" class="table-wrap"></div>
+              <button class="danger-button" type="button" data-action="delete-account">회원 탈퇴</button>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-admin" class="view hidden">
+          <div class="admin-tabs" role="tablist" aria-label="관리자 메뉴">
+            <button class="active" type="button" data-admin-tab="catalog">상품/카테고리</button>
+            <button type="button" data-admin-tab="coupon">쿠폰</button>
+            <button type="button" data-admin-tab="delivery">배송/회원</button>
+          </div>
+
+          <div id="admin-catalog" class="admin-section">
+            <div class="dashboard-grid">
+              <section class="content-panel">
+                <div class="section-title">
+                  <div><p>Category</p><h2>카테고리 생성/수정</h2></div>
+                </div>
+                <form id="adminCategoryForm" class="form-grid two-col">
+                  <input name="categoryId" type="hidden" />
+                  <label>이름 <input name="name" required /></label>
+                  <label>Depth <input name="depth" type="number" min="0" value="0" /></label>
+                  <label>정렬 <input name="orderIndex" type="number" min="0" value="0" /></label>
+                  <label>부모 ID <input name="parentId" type="number" min="1" placeholder="루트면 비움" /></label>
+                  <button class="primary-button" type="submit">저장</button>
+                  <button class="danger-button" type="button" data-action="delete-category">삭제</button>
+                </form>
+              </section>
+
+              <section class="content-panel">
+                <div class="section-title">
+                  <div><p>Item</p><h2>상품 생성/수정</h2></div>
+                </div>
+                <form id="adminItemForm" class="form-grid two-col">
+                  <input name="itemId" type="hidden" />
+                  <label>카테고리 ID <input name="categoryId" type="number" min="1" required /></label>
+                  <label>상품명 <input name="name" required /></label>
+                  <label>재고 <input name="stock" type="number" min="0" required /></label>
+                  <label>가격 <input name="itemPrice" type="number" min="0" required /></label>
+                  <button class="primary-button" type="submit">저장</button>
+                  <button class="danger-button" type="button" data-action="delete-item">삭제</button>
+                </form>
+              </section>
+            </div>
+          </div>
+
+          <div id="admin-coupon" class="admin-section hidden">
+            <div class="layout-two">
+              <section class="content-panel">
+                <div class="section-title">
+                  <div><p>Coupon</p><h2>쿠폰 목록</h2></div>
+                  <button class="ghost-button" type="button" data-action="load-admin-coupons">조회</button>
+                </div>
+                <div id="adminCouponList" class="table-wrap"></div>
+              </section>
+              <aside class="side-panel">
+                <h2>쿠폰 생성/수정</h2>
+                <form id="adminCouponForm" class="form-grid">
+                  <input name="couponId" type="hidden" />
+                  <label>쿠폰명 <input name="name" required /></label>
+                  <label>할인 금액 <input name="discount" type="number" min="0" required /></label>
+                  <label>시작일 <input name="validStart" type="date" required /></label>
+                  <label>종료일 <input name="validEnd" type="date" required /></label>
+                  <label>발급 후 유효일 <input name="afterIssue" type="number" min="1" required /></label>
+                  <button class="primary-button full" type="submit">저장</button>
+                  <button class="danger-button full" type="button" data-action="delete-coupon">삭제</button>
+                </form>
+              </aside>
+            </div>
+          </div>
+
+          <div id="admin-delivery" class="admin-section hidden">
+            <div class="dashboard-grid">
+              <section class="content-panel">
+                <div class="section-title">
+                  <div><p>Delivery</p><h2>배송 상태 변경</h2></div>
+                </div>
+                <form id="deliveryForm" class="form-grid two-col">
+                  <label>배송 ID <input name="deliveryId" type="number" min="1" required /></label>
+                  <label>
+                    상태
+                    <select name="status">
+                      <option value="PAYMENT_PENDING">PAYMENT_PENDING</option>
+                      <option value="READY">READY</option>
+                      <option value="SHIPPING">SHIPPING</option>
+                      <option value="COMPLETE">COMPLETE</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </label>
+                  <button class="primary-button" type="submit">변경</button>
+                </form>
+              </section>
+
+              <section class="content-panel">
+                <div class="section-title">
+                  <div><p>Users</p><h2>회원 목록</h2></div>
+                  <button class="ghost-button" type="button" data-action="load-users">조회</button>
+                </div>
+                <div id="adminUserList" class="table-wrap"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-realtime" class="view hidden">
+          <div class="layout-two">
+            <section class="content-panel">
+              <div class="section-title">
+                <div>
+                  <p>WebSocket</p>
+                  <h2>실시간 알림</h2>
+                </div>
+                <div class="inline-actions">
+                  <button class="primary-button" type="button" data-action="connect-ws">연결</button>
+                  <button class="danger-button" type="button" data-action="disconnect-ws">해제</button>
+                </div>
+              </div>
+              <form id="wsForm" class="form-grid two-col">
+                <label>
+                  구독 대상
+                  <select name="subscribeType">
+                    <option value="user">사용자 알림</option>
+                    <option value="admin">관리자 알림</option>
+                  </select>
+                </label>
+                <label>JWT <input name="token" placeholder="비우면 저장된 토큰 사용" /></label>
+              </form>
+              <pre id="wsLog" class="log-box"></pre>
+            </section>
+            <aside class="side-panel">
+              <p class="eyebrow">Destinations</p>
+              <ul class="compact-list">
+                <li><code>/user/queue/notifications</code></li>
+                <li><code>/user/queue/admin-notifications</code></li>
+              </ul>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="모바일 메뉴">
+        <a href="#store" data-nav="store" title="스토어">⌂</a>
+        <a href="#cart" data-nav="cart" data-auth="user" title="장바구니">▣</a>
+        <a href="#checkout" data-nav="checkout" data-auth="user" title="주문">₩</a>
+        <a href="#account" data-nav="account" data-auth="user" title="마이페이지">◎</a>
+        <a href="#auth" data-nav="auth" data-auth="guest" title="로그인">◎</a>
+      </nav>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

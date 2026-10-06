@@ -9,7 +9,7 @@ spring:
     throw-exception-if-no-handler-found: true
   web:
     resources:
-      add-mappings: false
+      add-mappings: true
 
   # .env 설정, 이를 설정함으로써 메인 애플리케이션 클래스에 입력값들을 명시하지 않아도 됨
   config:

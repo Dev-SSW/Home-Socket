@@ -68,6 +68,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // OPTIONS 요청(Preflight) 허용
                         .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/assets/**",
+                                "/favicon.ico",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/public/**",
                                 "/error/",
                                 "/swagger-ui/**",
