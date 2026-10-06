@@ -2,6 +2,7 @@ package Homepage.practice.Item;
 
 import Homepage.practice.Category.Category;
 import Homepage.practice.Category.CategoryRepository;
+import Homepage.practice.Category.DTO.CategoryRequest;
 import Homepage.practice.Item.DTO.ItemRequest;
 import Homepage.practice.Item.DTO.ItemUpdateRequest;
 import Homepage.practice.TestIntegrationInit;
@@ -95,6 +96,29 @@ public class IntegrationItem {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("전체 상품 가져오기 성공"))
                 .andExpect(jsonPath("$.data.content[0].name").value("item1"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("상위 카테고리 상품 조회 시 하위 카테고리 상품 포함")
+    @WithMockUser
+    void getItemsByCategory_includeChildren_success() throws Exception {
+        // given
+        Category childCategory = Category.createCategory(
+                new CategoryRequest("childCategory", 1, 1, testCategory.getId()), testCategory);
+        categoryRepository.save(childCategory);
+        TestIntegrationInit.createItem(itemRepository, childCategory);
+
+        // when & then
+        mockMvc.perform(get("/public/item/getItemsByCategory/{categoryId}", testCategory.getId())
+                        .param("page", "0")
+                        .param("size", "10")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("카테고리별 상품 조회 성공"))
+                .andExpect(jsonPath("$.data.content[0].name").value("item1"))
+                .andExpect(jsonPath("$.data.content[0].categoryName").value("childCategory"));
     }
 
     @Test

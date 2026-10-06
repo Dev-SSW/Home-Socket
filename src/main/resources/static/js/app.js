@@ -369,6 +369,12 @@ async function loadItems() {
   renderItems(page);
 }
 
+async function loadAllItems() {
+  $("#storeFilterForm [name='page']").value = "0";
+  $("#storeFilterForm [name='categoryId']").value = "";
+  await loadItems();
+}
+
 function renderCategoryNode(category) {
   const children = category.children || [];
   return `
@@ -1434,9 +1440,11 @@ function disconnectWs() {
 }
 
 const actions = {
-  "load-store": loadItems,
+  "load-store": loadAllItems,
+  "clear-category-filter": loadAllItems,
   "load-categories": loadCategories,
   "select-category": async (button) => {
+    $("#storeFilterForm [name='page']").value = "0";
     $("#storeFilterForm [name='categoryId']").value = button.dataset.id;
     await loadItems();
   },

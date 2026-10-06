@@ -17,6 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -62,11 +65,22 @@ public class ItemService {
             key = "#categoryId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort.toString()"
     )
     public PageResponse<ItemResponseCategory> getItemsByCategory(Long categoryId, Pageable pageable) {
-        if (!categoryRepository.existsById(categoryId)) {
-            throw new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다.");
-        }
-        Page<ItemResponseCategory> page = itemRepository.findItemsByCategory(categoryId, pageable);
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFound("아이디에 해당하는 카테고리가 없습니다."));
+        List<Long> categoryIds = collectCategoryIds(category);
+        Page<ItemResponseCategory> page = itemRepository.findItemsByCategoryIds(categoryIds, pageable);
         return PageResponse.from(page);
+    }
+
+    private List<Long> collectCategoryIds(Category category) {
+        List<Long> categoryIds = new ArrayList<>();
+        categoryIds.add(category.getId());
+
+        for (Category child : category.getChildren()) {
+            categoryIds.addAll(collectCategoryIds(child));
+        }
+
+        return categoryIds;
     }
 
     /** 상품 수정하기 */
